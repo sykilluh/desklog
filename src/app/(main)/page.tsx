@@ -119,6 +119,12 @@ export default function MainPage() {
             📖 챌린지
           </a>
           <a
+            href="/plant"
+            className="flex items-center gap-1.5 rounded-full border-2 border-mint-200 bg-white px-5 py-2.5 text-base font-bold text-[#5b4a52] shadow-sm transition hover:scale-105 hover:bg-mint-50"
+          >
+            🌱 식물
+          </a>
+          <a
             href="/archive"
             className="flex items-center gap-1.5 rounded-full border-2 border-sky-blue-200 bg-white px-5 py-2.5 text-base font-bold text-[#5b4a52] shadow-sm transition hover:scale-105 hover:bg-sky-blue-50"
           >

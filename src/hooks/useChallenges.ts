@@ -46,5 +46,34 @@ export function useChallenges() {
     return json;
   }, []);
 
-  return { challenges, isLoading, createChallenge, updateProgress };
+  const updateChallenge = useCallback(async (id: number, input: Partial<ChallengeInput>) => {
+    const res = await fetch(`/api/challenges/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    const json = await res.json();
+    if (json.ok) {
+      setChallenges((prev) => prev.map((c) => (c.id === id ? json.data : c)));
+    }
+    return json;
+  }, []);
+
+  const deleteChallenge = useCallback(async (id: number) => {
+    const res = await fetch(`/api/challenges/${id}`, { method: "DELETE" });
+    const json = await res.json();
+    if (json.ok) {
+      setChallenges((prev) => prev.filter((c) => c.id !== id));
+    }
+    return json;
+  }, []);
+
+  return {
+    challenges,
+    isLoading,
+    createChallenge,
+    updateProgress,
+    updateChallenge,
+    deleteChallenge,
+  };
 }

@@ -30,7 +30,7 @@ export default function VisualFeedback({
         >
           💡
         </span>
-        <span className="font-cute text-xs text-[#a8889a]">
+        <span className="text-xs text-[#a8889a]">
           오늘 집중 {Math.floor(todayFocusSeconds / 60)}분
         </span>
       </div>
@@ -39,7 +39,7 @@ export default function VisualFeedback({
         <span className={`text-5xl ${isRainbowStage ? "animate-wiggle" : ""}`}>
           {getPlantStage(progressRate)}
         </span>
-        <span className="font-cute text-xs text-[#a8889a]">챌린지 {progressRate}%</span>
+        <span className="text-xs text-[#a8889a]">챌린지 {progressRate}%</span>
       </div>
     </div>
   );

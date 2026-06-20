@@ -10,12 +10,16 @@
 body {
   color: var(--foreground);
   background: linear-gradient(135deg, #fff0f6 0%, #f0fbff 35%, #f1fff7 65%, #fff6f0 100%);
-  font-family: var(--font-gaegu), sans-serif;
+  font-family: var(--font-noto), sans-serif;
   min-height: 100vh;
 }
 
-h1, h2, h3, .font-cute {
+h1, .font-cute {
   font-family: var(--font-jua), sans-serif;
+}
+
+.font-round {
+  font-family: var(--font-gaegu), sans-serif;
 }
 
 @layer utilities {

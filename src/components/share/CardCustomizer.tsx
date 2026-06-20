@@ -12,7 +12,7 @@ export default function CardCustomizer({
   return (
     <div className="space-y-4 rounded-3xl border-2 border-white/70 bg-white/80 p-5 shadow-md backdrop-blur">
       <div>
-        <p className="font-cute mb-2 text-sm text-[#a8889a]">배경</p>
+        <p className="mb-2 text-sm text-[#a8889a]">배경</p>
         <div className="flex gap-2">
           {CARD_BACKGROUNDS.map((bg) => (
             <button
@@ -28,7 +28,7 @@ export default function CardCustomizer({
       </div>
 
       <div>
-        <p className="font-cute mb-2 text-sm text-[#a8889a]">폰트</p>
+        <p className="mb-2 text-sm text-[#a8889a]">폰트</p>
         <div className="flex gap-2">
           {CARD_FONTS.map((font) => (
             <button
@@ -47,7 +47,7 @@ export default function CardCustomizer({
       </div>
 
       <div>
-        <p className="font-cute mb-2 text-sm text-[#a8889a]">스티커</p>
+        <p className="mb-2 text-sm text-[#a8889a]">스티커</p>
         <div className="flex gap-2">
           <button
             onClick={() => onChange({ ...config, sticker: null })}

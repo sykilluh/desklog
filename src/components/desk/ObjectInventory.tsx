@@ -19,7 +19,7 @@ function InventoryItem({ objectName, label, emoji }: { objectName: string; label
       }`}
     >
       <span className="text-3xl">{emoji}</span>
-      <span className="font-cute text-xs text-[#a8889a]">{label}</span>
+      <span className="text-xs text-[#a8889a]">{label}</span>
     </div>
   );
 }

@@ -17,6 +17,8 @@ model User {
   desks        DeskObject[]
   challenges   Challenge[]
   focusLogs    FocusLog[]
+  todos        Todo[]
+  plantWaterings PlantWatering[]
 
   @@map("users")
 }
@@ -70,4 +72,28 @@ model FocusLog {
   createdAt       DateTime   @default(now()) @map("created_at")
 
   @@map("focus_logs")
+}
+
+model Todo {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @map("user_id")
+  user         User     @relation(fields: [userId], references: [id])
+  title        String
+  isDone       Boolean  @default(false) @map("is_done")
+  focusSeconds Int      @default(0) @map("focus_seconds")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("todos")
+}
+
+model PlantWatering {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  user        User     @relation(fields: [userId], references: [id])
+  wateredDate DateTime @map("watered_date")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, wateredDate])
+  @@map("plant_waterings")
 }

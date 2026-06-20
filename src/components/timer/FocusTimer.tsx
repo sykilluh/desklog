@@ -72,7 +72,7 @@ export default function FocusTimer({ onFocusLogged }: { onFocusLogged?: () => vo
       )}
 
       {mode === "pomodoro" && (
-        <p className="font-cute mb-1 text-xs text-[#a8889a]">
+        <p className="mb-1 text-xs text-[#a8889a]">
           {phase === "focus" ? "🌷 집중 시간" : "🍓 휴식 시간"}
         </p>
       )}

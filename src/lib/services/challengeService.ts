@@ -73,3 +73,38 @@ export async function updateChallengeProgress(userId: number, id: number, curren
 
   return withDerivedFields(updated);
 }
+
+interface UpdateChallengeInput {
+  title?: string;
+  totalPages?: number;
+  startDate?: string;
+  endDate?: string;
+}
+
+export async function updateChallenge(userId: number, id: number, input: UpdateChallengeInput) {
+  const existing = await prisma.challenge.findFirst({ where: { id, userId } });
+  if (!existing) {
+    throw new ServiceError("챌린지를 찾을 수 없습니다.", 404);
+  }
+
+  const updated = await prisma.challenge.update({
+    where: { id },
+    data: {
+      title: input.title,
+      totalPages: input.totalPages,
+      startDate: input.startDate ? new Date(input.startDate) : undefined,
+      endDate: input.endDate ? new Date(input.endDate) : undefined,
+    },
+  });
+
+  return withDerivedFields(updated);
+}
+
+export async function deleteChallenge(userId: number, id: number) {
+  const existing = await prisma.challenge.findFirst({ where: { id, userId } });
+  if (!existing) {
+    throw new ServiceError("챌린지를 찾을 수 없습니다.", 404);
+  }
+
+  await prisma.challenge.delete({ where: { id } });
+}
