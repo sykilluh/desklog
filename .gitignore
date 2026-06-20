@@ -1,4 +1,5 @@
 .claude/
+.vs/
 
 # dependencies
 /node_modules
