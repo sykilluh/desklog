@@ -10,10 +10,12 @@ export default function DeskCanvas({
   objects,
   onToggleAudio,
   onVolumeChange,
+  isTurntableSpinning,
 }: {
   objects: DeskObjectDTO[];
   onToggleAudio: (object: DeskObjectDTO) => void;
   onVolumeChange: (id: number, volume: number) => void;
+  isTurntableSpinning: boolean;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: DESK_CANVAS_ID });
 
@@ -30,6 +32,7 @@ export default function DeskCanvas({
           object={object}
           onToggleAudio={onToggleAudio}
           onVolumeChange={onVolumeChange}
+          isSpinning={object.objectName === "turntable" ? isTurntableSpinning : object.isActive}
         />
       ))}
     </div>

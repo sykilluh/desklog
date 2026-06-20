@@ -11,13 +11,17 @@ import YoutubeMixer from "@/components/audio/YoutubeMixer";
 import { useDeskObjects } from "@/hooks/useDeskObjects";
 import { useWebAudio } from "@/hooks/useWebAudio";
 import { useChallenges } from "@/hooks/useChallenges";
+import { useYoutubePlayer } from "@/hooks/useYoutubePlayer";
 import { rectToPercent } from "@/hooks/useDragAndDrop";
 import type { DeskObjectDTO, DeskObjectInput } from "@/types/desk";
+
+const YOUTUBE_PLAYER_CONTAINER_ID = "desklog-youtube-player";
 
 export default function MainPage() {
   const { objects, setObjects, isLoading, isSaving, save } = useDeskObjects();
   const { isMuted, toggleObject, changeVolume, toggleMute } = useWebAudio();
   const { challenges } = useChallenges();
+  const youtube = useYoutubePlayer(YOUTUBE_PLAYER_CONTAINER_ID);
   const [todayFocusSeconds, setTodayFocusSeconds] = useState(0);
 
   const refreshTodayFocus = useCallback(async () => {
@@ -59,14 +63,24 @@ export default function MainPage() {
   }
 
   function handleToggleAudio(object: DeskObjectDTO) {
-    toggleObject(object.id, object.objectName, object.volume, object.isActive);
+    if (object.objectName === "turntable") {
+      if (object.isActive) youtube.pause();
+      else youtube.play();
+    } else {
+      toggleObject(object.id, object.objectName, object.volume, object.isActive);
+    }
     setObjects((prev) =>
       prev.map((obj) => (obj.id === object.id ? { ...obj, isActive: !obj.isActive } : obj))
     );
   }
 
   function handleVolumeChange(id: number, volume: number) {
-    changeVolume(id, volume);
+    const target = objects.find((obj) => obj.id === id);
+    if (target?.objectName === "turntable") {
+      youtube.setVolume(volume);
+    } else {
+      changeVolume(id, volume);
+    }
     setObjects((prev) => prev.map((obj) => (obj.id === id ? { ...obj, volume } : obj)));
   }
 
@@ -115,6 +129,7 @@ export default function MainPage() {
                   objects={objects}
                   onToggleAudio={handleToggleAudio}
                   onVolumeChange={handleVolumeChange}
+                  isTurntableSpinning={youtube.isPlaying}
                 />
               )}
             </div>
@@ -132,7 +147,16 @@ export default function MainPage() {
         <div className="flex flex-col gap-6">
           <FocusTimer onFocusLogged={refreshTodayFocus} />
           <VisualFeedback todayFocusSeconds={todayFocusSeconds} progressRate={progressRate} />
-          <YoutubeMixer />
+          <div id={YOUTUBE_PLAYER_CONTAINER_ID} className="hidden" />
+          <YoutubeMixer
+            isReady={youtube.isReady}
+            isPlaying={youtube.isPlaying}
+            loadVideo={youtube.loadVideo}
+            loadPlaylist={youtube.loadPlaylist}
+            play={youtube.play}
+            pause={youtube.pause}
+            setVolume={youtube.setVolume}
+          />
         </div>
       </div>
     </main>

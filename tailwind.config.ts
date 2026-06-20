@@ -12,6 +12,9 @@ const config: Config = {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      animation: {
+        "spin-slow": "spin 1.8s linear infinite",
+      },
     },
   },
   plugins: [],

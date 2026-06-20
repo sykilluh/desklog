@@ -1,14 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { useYoutubePlayer } from "@/hooks/useYoutubePlayer";
 import { parseYoutubeUrl } from "@/lib/youtube";
 
-const PLAYER_CONTAINER_ID = "desklog-youtube-player";
-
-export default function YoutubeMixer() {
-  const { isReady, isPlaying, loadVideo, loadPlaylist, play, pause, setVolume } =
-    useYoutubePlayer(PLAYER_CONTAINER_ID);
+export default function YoutubeMixer({
+  isReady,
+  isPlaying,
+  loadVideo,
+  loadPlaylist,
+  play,
+  pause,
+  setVolume,
+}: {
+  isReady: boolean;
+  isPlaying: boolean;
+  loadVideo: (videoId: string) => void;
+  loadPlaylist: (listId: string) => void;
+  play: () => void;
+  pause: () => void;
+  setVolume: (volume: number) => void;
+}) {
   const [url, setUrl] = useState("");
   const [volume, setVolumeState] = useState(0.5);
   const [error, setError] = useState("");
@@ -36,7 +47,7 @@ export default function YoutubeMixer() {
   return (
     <div className="rounded-xl bg-zinc-900 p-5">
       <p className="mb-3 text-sm font-medium text-zinc-300">유튜브 플레이리스트</p>
-      <div id={PLAYER_CONTAINER_ID} className="hidden" />
+      <p className="mb-3 text-xs text-zinc-500">턴테이블을 켜면 이 음악도 함께 재생/정지돼요.</p>
 
       <div className="flex gap-2">
         <input
