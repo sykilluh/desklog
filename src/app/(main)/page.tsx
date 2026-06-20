@@ -5,6 +5,7 @@ import ObjectInventory from "@/components/desk/ObjectInventory";
 import DeskCanvas, { DESK_CANVAS_ID } from "@/components/desk/DeskCanvas";
 import AudioController from "@/components/audio/AudioController";
 import FocusTimer from "@/components/timer/FocusTimer";
+import YoutubeMixer from "@/components/audio/YoutubeMixer";
 import { useDeskObjects } from "@/hooks/useDeskObjects";
 import { useWebAudio } from "@/hooks/useWebAudio";
 import { rectToPercent } from "@/hooks/useDragAndDrop";
@@ -97,7 +98,10 @@ export default function MainPage() {
           </button>
         </div>
 
-        <FocusTimer />
+        <div className="flex flex-col gap-6">
+          <FocusTimer />
+          <YoutubeMixer />
+        </div>
       </div>
     </main>
   );
