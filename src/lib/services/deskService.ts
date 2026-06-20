@@ -1,15 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { ServiceError } from "@/lib/response";
-import { DEMO_USER_ID } from "@/lib/constants";
+import { ensureDemoUser } from "@/lib/services/userService";
 import type { DeskObjectInput } from "@/types/desk";
-
-async function ensureDemoUser() {
-  await prisma.user.upsert({
-    where: { id: DEMO_USER_ID },
-    update: {},
-    create: { id: DEMO_USER_ID, email: "demo@desklog.app", password: "demo", nickname: "Demo" },
-  });
-}
 
 export async function getDeskObjects(userId: number) {
   return prisma.deskObject.findMany({

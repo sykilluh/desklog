@@ -4,6 +4,7 @@ import { DndContext, type DragEndEvent } from "@dnd-kit/core";
 import ObjectInventory from "@/components/desk/ObjectInventory";
 import DeskCanvas, { DESK_CANVAS_ID } from "@/components/desk/DeskCanvas";
 import AudioController from "@/components/audio/AudioController";
+import FocusTimer from "@/components/timer/FocusTimer";
 import { useDeskObjects } from "@/hooks/useDeskObjects";
 import { useWebAudio } from "@/hooks/useWebAudio";
 import { rectToPercent } from "@/hooks/useDragAndDrop";
@@ -69,29 +70,35 @@ export default function MainPage() {
         <AudioController isMuted={isMuted} onToggleMute={toggleMute} />
       </div>
 
-      <DndContext onDragEnd={handleDragEnd}>
-        <ObjectInventory />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
+        <div>
+          <DndContext onDragEnd={handleDragEnd}>
+            <ObjectInventory />
 
-        <div className="mt-6">
-          {isLoading ? (
-            <p className="text-zinc-400">불러오는 중...</p>
-          ) : (
-            <DeskCanvas
-              objects={objects}
-              onToggleAudio={handleToggleAudio}
-              onVolumeChange={handleVolumeChange}
-            />
-          )}
+            <div className="mt-6">
+              {isLoading ? (
+                <p className="text-zinc-400">불러오는 중...</p>
+              ) : (
+                <DeskCanvas
+                  objects={objects}
+                  onToggleAudio={handleToggleAudio}
+                  onVolumeChange={handleVolumeChange}
+                />
+              )}
+            </div>
+          </DndContext>
+
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="mt-6 rounded-lg bg-amber-500 px-5 py-2 font-medium text-zinc-900 hover:bg-amber-400 disabled:opacity-50"
+          >
+            {isSaving ? "저장 중..." : "배치 저장"}
+          </button>
         </div>
-      </DndContext>
 
-      <button
-        onClick={handleSave}
-        disabled={isSaving}
-        className="mt-6 rounded-lg bg-amber-500 px-5 py-2 font-medium text-zinc-900 hover:bg-amber-400 disabled:opacity-50"
-      >
-        {isSaving ? "저장 중..." : "배치 저장"}
-      </button>
+        <FocusTimer />
+      </div>
     </main>
   );
 }
