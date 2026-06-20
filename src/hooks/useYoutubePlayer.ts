@@ -29,6 +29,9 @@ export function useYoutubePlayer(containerId: string) {
   const [isReady, setIsReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
+  const [currentVideoTitle, setCurrentVideoTitle] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -44,8 +47,9 @@ export function useYoutubePlayer(containerId: string) {
           onStateChange: (event) => {
             if (!window.YT) return;
             setIsPlaying(event.data === window.YT.PlayerState.PLAYING);
-            const videoId = event.target.getVideoData()?.video_id;
-            if (videoId) setCurrentVideoId(videoId);
+            const data = event.target.getVideoData();
+            if (data?.video_id) setCurrentVideoId(data.video_id);
+            if (data?.title) setCurrentVideoTitle(data.title);
           },
         },
       });
@@ -56,6 +60,17 @@ export function useYoutubePlayer(containerId: string) {
       playerRef.current?.destroy();
     };
   }, [containerId]);
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(() => {
+      const player = playerRef.current;
+      if (!player) return;
+      setCurrentTime(player.getCurrentTime());
+      setDuration(player.getDuration());
+    }, 500);
+    return () => clearInterval(interval);
+  }, [isPlaying]);
 
   const loadVideo = useCallback((videoId: string) => {
     playerRef.current?.loadVideoById(videoId);
@@ -71,15 +86,25 @@ export function useYoutubePlayer(containerId: string) {
   const setVolume = useCallback((volume: number) => {
     playerRef.current?.setVolume(Math.round(volume * 100));
   }, []);
+  const seekTo = useCallback((seconds: number) => {
+    playerRef.current?.seekTo(seconds, true);
+    setCurrentTime(seconds);
+  }, []);
 
   return {
     isReady,
     isPlaying,
     currentVideoId,
+    currentVideoTitle,
+    currentTime,
+    duration,
     loadVideo,
     loadPlaylist,
     play,
     pause,
     setVolume,
+    seekTo,
   };
 }
+
+export type YoutubePlayerState = ReturnType<typeof useYoutubePlayer>;

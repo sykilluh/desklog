@@ -3,22 +3,39 @@
 import { useState } from "react";
 import { parseYoutubeUrl } from "@/lib/youtube";
 
+function formatTime(seconds: number) {
+  if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60)
+    .toString()
+    .padStart(2, "0");
+  return `${m}:${s}`;
+}
+
 export default function YoutubeMixer({
   isReady,
   isPlaying,
+  currentVideoTitle,
+  currentTime,
+  duration,
   loadVideo,
   loadPlaylist,
   play,
   pause,
   setVolume,
+  seekTo,
 }: {
   isReady: boolean;
   isPlaying: boolean;
+  currentVideoTitle: string | null;
+  currentTime: number;
+  duration: number;
   loadVideo: (videoId: string) => void;
   loadPlaylist: (listId: string) => void;
   play: () => void;
   pause: () => void;
   setVolume: (volume: number) => void;
+  seekTo: (seconds: number) => void;
 }) {
   const [url, setUrl] = useState("");
   const [volume, setVolumeState] = useState(0.5);
@@ -66,6 +83,26 @@ export default function YoutubeMixer({
       </div>
 
       {error && <p className="mt-2 text-xs text-strawberry-milk-400">{error}</p>}
+
+      {currentVideoTitle && (
+        <p className="mt-3 truncate text-sm font-bold text-[#3a6e58]" title={currentVideoTitle}>
+          🎵 {currentVideoTitle}
+        </p>
+      )}
+
+      <div className="mt-2 flex items-center gap-2 text-xs text-[#8fb0c4]">
+        <span>{formatTime(currentTime)}</span>
+        <input
+          type="range"
+          min={0}
+          max={duration || 0}
+          step={1}
+          value={Math.min(currentTime, duration || 0)}
+          onChange={(e) => seekTo(Number(e.target.value))}
+          className="h-1 flex-1 accent-mint-300"
+        />
+        <span>{formatTime(duration)}</span>
+      </div>
 
       <div className="mt-4 flex items-center gap-3">
         <button

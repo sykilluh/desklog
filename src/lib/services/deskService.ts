@@ -34,6 +34,7 @@ export async function saveDeskObjects(userId: number, objects: DeskObjectInput[]
         posY: obj.posY,
         isActive: obj.isActive ?? true,
         volume: obj.volume ?? 0.5,
+        scale: obj.scale ?? 1,
       })),
     });
     return tx.deskObject.findMany({ where: { userId }, orderBy: { id: "asc" } });
@@ -43,7 +44,7 @@ export async function saveDeskObjects(userId: number, objects: DeskObjectInput[]
 export async function patchDeskObject(
   userId: number,
   id: number,
-  data: Partial<Pick<DeskObjectInput, "isActive" | "volume" | "posX" | "posY">>
+  data: Partial<Pick<DeskObjectInput, "isActive" | "volume" | "posX" | "posY" | "scale">>
 ) {
   const existing = await prisma.deskObject.findFirst({ where: { id, userId } });
   if (!existing) {

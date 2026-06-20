@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Jua, Gaegu } from "next/font/google";
 import AuthSessionProvider from "@/components/providers/AuthSessionProvider";
+import PlaylistProvider from "@/components/providers/PlaylistProvider";
 import "./globals.css";
 
 const jua = Jua({
@@ -30,7 +31,9 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={`${jua.variable} ${gaegu.variable} antialiased`}>
-        <AuthSessionProvider>{children}</AuthSessionProvider>
+        <AuthSessionProvider>
+          <PlaylistProvider>{children}</PlaylistProvider>
+        </AuthSessionProvider>
       </body>
     </html>
   );

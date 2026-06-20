@@ -10,12 +10,14 @@ export default function DeskCanvas({
   objects,
   onToggleAudio,
   onVolumeChange,
+  onScaleChange,
   isTurntableSpinning,
   turntableVideoId,
 }: {
   objects: DeskObjectDTO[];
   onToggleAudio: (object: DeskObjectDTO) => void;
   onVolumeChange: (id: number, volume: number) => void;
+  onScaleChange: (id: number, scale: number) => void;
   isTurntableSpinning: boolean;
   turntableVideoId: string | null;
 }) {
@@ -34,6 +36,7 @@ export default function DeskCanvas({
           object={object}
           onToggleAudio={onToggleAudio}
           onVolumeChange={onVolumeChange}
+          onScaleChange={onScaleChange}
           isSpinning={object.objectName === "turntable" ? isTurntableSpinning : object.isActive}
           videoId={object.objectName === "turntable" ? turntableVideoId : null}
         />

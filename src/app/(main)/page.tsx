@@ -5,24 +5,19 @@ import { signOut } from "next-auth/react";
 import { DndContext, type DragEndEvent } from "@dnd-kit/core";
 import ObjectInventory from "@/components/desk/ObjectInventory";
 import DeskCanvas, { DESK_CANVAS_ID } from "@/components/desk/DeskCanvas";
-import AudioController from "@/components/audio/AudioController";
 import FocusTimer from "@/components/timer/FocusTimer";
 import VisualFeedback from "@/components/timer/VisualFeedback";
 import YoutubeMixer from "@/components/audio/YoutubeMixer";
 import { useDeskObjects } from "@/hooks/useDeskObjects";
-import { useWebAudio } from "@/hooks/useWebAudio";
 import { useChallenges } from "@/hooks/useChallenges";
-import { useYoutubePlayer } from "@/hooks/useYoutubePlayer";
+import { usePlaylist } from "@/components/providers/PlaylistProvider";
 import { rectToPercent } from "@/hooks/useDragAndDrop";
 import type { DeskObjectDTO, DeskObjectInput } from "@/types/desk";
 
-const YOUTUBE_PLAYER_CONTAINER_ID = "desklog-youtube-player";
-
 export default function MainPage() {
   const { objects, setObjects, isLoading, isSaving, save } = useDeskObjects();
-  const { isMuted, toggleObject, changeVolume, toggleMute } = useWebAudio();
   const { challenges } = useChallenges();
-  const youtube = useYoutubePlayer(YOUTUBE_PLAYER_CONTAINER_ID);
+  const youtube = usePlaylist();
   const [todayFocusSeconds, setTodayFocusSeconds] = useState(0);
 
   const refreshTodayFocus = useCallback(async () => {
@@ -51,7 +46,15 @@ export default function MainPage() {
     if (data.source === "inventory" && data.objectName) {
       setObjects((prev) => [
         ...prev,
-        { id: -Date.now(), objectName: data.objectName!, posX, posY, isActive: false, volume: 0.5 },
+        {
+          id: -Date.now(),
+          objectName: data.objectName!,
+          posX,
+          posY,
+          isActive: false,
+          volume: 0.5,
+          scale: 1,
+        },
       ]);
       return;
     }
@@ -67,9 +70,12 @@ export default function MainPage() {
     if (object.objectName === "turntable") {
       if (object.isActive) youtube.pause();
       else youtube.play();
-    } else {
-      toggleObject(object.id, object.objectName, object.volume, object.isActive);
+      setObjects((prev) =>
+        prev.map((obj) => (obj.id === object.id ? { ...obj, isActive: !obj.isActive } : obj))
+      );
+      return;
     }
+    // 다른 오브제의 화이트노이즈는 너무 시끄럽다는 피드백으로 일단 비활성화.
     setObjects((prev) =>
       prev.map((obj) => (obj.id === object.id ? { ...obj, isActive: !obj.isActive } : obj))
     );
@@ -79,10 +85,12 @@ export default function MainPage() {
     const target = objects.find((obj) => obj.id === id);
     if (target?.objectName === "turntable") {
       youtube.setVolume(volume);
-    } else {
-      changeVolume(id, volume);
     }
     setObjects((prev) => prev.map((obj) => (obj.id === id ? { ...obj, volume } : obj)));
+  }
+
+  function handleScaleChange(id: number, scale: number) {
+    setObjects((prev) => prev.map((obj) => (obj.id === id ? { ...obj, scale } : obj)));
   }
 
   function handleSave() {
@@ -92,6 +100,7 @@ export default function MainPage() {
       posY: obj.posY,
       isActive: obj.isActive,
       volume: obj.volume,
+      scale: obj.scale,
     }));
     save(payload);
   }
@@ -115,7 +124,6 @@ export default function MainPage() {
           >
             🎀 공유 카드
           </a>
-          <AudioController isMuted={isMuted} onToggleMute={toggleMute} />
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
             className="flex items-center gap-1.5 rounded-full border-2 border-strawberry-milk-200 bg-white px-5 py-2.5 text-base font-bold text-[#5b4a52] shadow-sm transition hover:scale-105 hover:bg-strawberry-milk-50"
@@ -138,6 +146,7 @@ export default function MainPage() {
                   objects={objects}
                   onToggleAudio={handleToggleAudio}
                   onVolumeChange={handleVolumeChange}
+                  onScaleChange={handleScaleChange}
                   isTurntableSpinning={youtube.isPlaying}
                   turntableVideoId={youtube.currentVideoId}
                 />
@@ -157,15 +166,18 @@ export default function MainPage() {
         <div className="flex flex-col gap-6">
           <FocusTimer onFocusLogged={refreshTodayFocus} />
           <VisualFeedback todayFocusSeconds={todayFocusSeconds} progressRate={progressRate} />
-          <div id={YOUTUBE_PLAYER_CONTAINER_ID} className="hidden" />
           <YoutubeMixer
             isReady={youtube.isReady}
             isPlaying={youtube.isPlaying}
+            currentVideoTitle={youtube.currentVideoTitle}
+            currentTime={youtube.currentTime}
+            duration={youtube.duration}
             loadVideo={youtube.loadVideo}
             loadPlaylist={youtube.loadPlaylist}
             play={youtube.play}
             pause={youtube.pause}
             setVolume={youtube.setVolume}
+            seekTo={youtube.seekTo}
           />
         </div>
       </div>

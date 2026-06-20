@@ -16,7 +16,10 @@ interface YTPlayer {
   loadPlaylist(options: { list: string }): void;
   cueVideoById(videoId: string): void;
   loadVideoById(videoId: string): void;
-  getVideoData(): { video_id?: string; title?: string };
+  getVideoData(): { video_id?: string; title?: string; author?: string };
+  getCurrentTime(): number;
+  getDuration(): number;
+  seekTo(seconds: number, allowSeekAhead: boolean): void;
   destroy(): void;
 }
 

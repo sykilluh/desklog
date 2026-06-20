@@ -5,6 +5,7 @@ export interface DeskObjectDTO {
   posY: number;
   isActive: boolean;
   volume: number;
+  scale: number;
 }
 
 export interface DeskObjectInput {
@@ -13,4 +14,5 @@ export interface DeskObjectInput {
   posY: number;
   isActive?: boolean;
   volume?: number;
+  scale?: number;
 }

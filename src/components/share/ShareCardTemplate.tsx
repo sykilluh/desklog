@@ -9,12 +9,12 @@ const ShareCardTemplate = forwardRef<
   HTMLDivElement,
   {
     config: ShareCardConfig;
+    title: string;
     totalSeconds: number;
-    audioPresetName: string | null;
-    completedTitle: string | null;
+    nowPlaying: string | null;
     completedDate: string | null;
   }
->(({ config, totalSeconds, audioPresetName, completedTitle, completedDate }, ref) => {
+>(({ config, title, totalSeconds, nowPlaying, completedDate }, ref) => {
   const background = CARD_BACKGROUNDS.find((b) => b.id === config.backgroundId) ?? CARD_BACKGROUNDS[0];
   const font = CARD_FONTS.find((f) => f.id === config.fontId) ?? CARD_FONTS[0];
 
@@ -27,7 +27,7 @@ const ShareCardTemplate = forwardRef<
 
       <div>
         <p className="text-sm uppercase tracking-widest text-[#a8889a]">🩷 DeskLog</p>
-        <h2 className="mt-2 text-2xl font-bold">{completedTitle ?? "나의 독서 기록"}</h2>
+        <h2 className="mt-2 text-2xl font-bold">{title || "나의 독서 기록"}</h2>
       </div>
 
       <div className="space-y-3">
@@ -35,10 +35,10 @@ const ShareCardTemplate = forwardRef<
           <p className="text-xs text-[#a8889a]">총 독서 시간</p>
           <p className="text-3xl font-bold text-[#ff6fa5]">{formatHours(totalSeconds)}시간</p>
         </div>
-        {audioPresetName && (
+        {nowPlaying && (
           <div>
-            <p className="text-xs text-[#a8889a]">주요 사운드</p>
-            <p className="text-lg">{audioPresetName}</p>
+            <p className="text-xs text-[#a8889a]">지금 듣고 있는 음악</p>
+            <p className="line-clamp-2 text-base">🎵 {nowPlaying}</p>
           </div>
         )}
         {completedDate && (

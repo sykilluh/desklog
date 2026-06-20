@@ -30,6 +30,7 @@ model DeskObject {
   posY       Float    @map("pos_y")
   isActive   Boolean  @default(true) @map("is_active")
   volume     Float    @default(0.5)
+  scale      Float    @default(1)
   updatedAt  DateTime @updatedAt @map("updated_at")
 
   @@map("desk_objects")
