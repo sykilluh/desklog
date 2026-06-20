@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { ServiceError } from "@/lib/response";
 import { computeDailyGoal, computeProgressRate, buildWeeklyMilestones } from "@/lib/scheduler";
+import { applyCompletionBuff } from "@/lib/services/plantService";
 
 interface CreateChallengeInput {
   title: string;
@@ -65,11 +66,16 @@ export async function updateChallengeProgress(userId: number, id: number, curren
   }
 
   const status = currentPages >= existing.totalPages ? "COMPLETED" : existing.status;
+  const justCompleted = status === "COMPLETED" && existing.status !== "COMPLETED";
 
   const updated = await prisma.challenge.update({
     where: { id },
     data: { currentPages, status },
   });
+
+  if (justCompleted) {
+    await applyCompletionBuff(userId);
+  }
 
   return withDerivedFields(updated);
 }

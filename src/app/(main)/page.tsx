@@ -1,6 +1,5 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 import { DndContext, type DragEndEvent } from "@dnd-kit/core";
 import ObjectInventory from "@/components/desk/ObjectInventory";
@@ -11,6 +10,7 @@ import YoutubeMixer from "@/components/audio/YoutubeMixer";
 import { useDeskObjects } from "@/hooks/useDeskObjects";
 import { useChallenges } from "@/hooks/useChallenges";
 import { usePlaylist } from "@/components/providers/PlaylistProvider";
+import { useGlobalFocusTimer } from "@/components/providers/FocusTimerProvider";
 import { rectToPercent } from "@/hooks/useDragAndDrop";
 import type { DeskObjectDTO, DeskObjectInput } from "@/types/desk";
 
@@ -18,17 +18,7 @@ export default function MainPage() {
   const { objects, setObjects, isLoading, isSaving, save } = useDeskObjects();
   const { challenges } = useChallenges();
   const youtube = usePlaylist();
-  const [todayFocusSeconds, setTodayFocusSeconds] = useState(0);
-
-  const refreshTodayFocus = useCallback(async () => {
-    const res = await fetch("/api/focus-logs");
-    const json = await res.json();
-    if (json.ok) setTodayFocusSeconds(json.data.todaySeconds);
-  }, []);
-
-  useEffect(() => {
-    refreshTodayFocus();
-  }, [refreshTodayFocus]);
+  const { todayFocusSeconds } = useGlobalFocusTimer();
 
   const progressRate = challenges[0]?.progressRate ?? 0;
 
@@ -108,45 +98,43 @@ export default function MainPage() {
   return (
     <main className="min-h-screen p-6 text-[#5b4a52] sm:p-8">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-cute text-3xl text-[#ff6fa5] drop-shadow-sm">
-          🩷 데스크로그 · 나만의 데스크
-        </h1>
+        <h1 className="text-4xl text-[#ff6fa5] drop-shadow-sm">🩷 데스크로그 · 나만의 데스크</h1>
         <div className="flex flex-wrap items-center gap-3">
           <a
             href="/challenge"
-            className="flex items-center gap-1.5 rounded-full border-2 border-mint-200 bg-white px-5 py-2.5 text-base font-bold text-[#5b4a52] shadow-sm transition hover:scale-105 hover:bg-mint-50"
+            className="flex items-center gap-1.5 rounded-full border-2 border-mint-200 bg-white px-6 py-3 text-lg font-bold text-[#5b4a52] shadow-sm transition hover:scale-105 hover:bg-mint-50"
           >
             📖 챌린지
           </a>
           <a
             href="/plant"
-            className="flex items-center gap-1.5 rounded-full border-2 border-mint-200 bg-white px-5 py-2.5 text-base font-bold text-[#5b4a52] shadow-sm transition hover:scale-105 hover:bg-mint-50"
+            className="flex items-center gap-1.5 rounded-full border-2 border-mint-200 bg-white px-6 py-3 text-lg font-bold text-[#5b4a52] shadow-sm transition hover:scale-105 hover:bg-mint-50"
           >
             🌱 식물
           </a>
           <a
             href="/archive"
-            className="flex items-center gap-1.5 rounded-full border-2 border-sky-blue-200 bg-white px-5 py-2.5 text-base font-bold text-[#5b4a52] shadow-sm transition hover:scale-105 hover:bg-sky-blue-50"
+            className="flex items-center gap-1.5 rounded-full border-2 border-sky-blue-200 bg-white px-6 py-3 text-lg font-bold text-[#5b4a52] shadow-sm transition hover:scale-105 hover:bg-sky-blue-50"
           >
             🎀 공유 카드
           </a>
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="flex items-center gap-1.5 rounded-full border-2 border-strawberry-milk-200 bg-white px-5 py-2.5 text-base font-bold text-[#5b4a52] shadow-sm transition hover:scale-105 hover:bg-strawberry-milk-50"
+            className="flex items-center gap-1.5 rounded-full border-2 border-strawberry-milk-200 bg-white px-6 py-3 text-lg font-bold text-[#5b4a52] shadow-sm transition hover:scale-105 hover:bg-strawberry-milk-50"
           >
             🚪 로그아웃
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
         <div>
           <DndContext onDragEnd={handleDragEnd}>
             <ObjectInventory />
 
             <div className="mt-6">
               {isLoading ? (
-                <p className="font-cute text-[#a8889a]">불러오는 중...</p>
+                <p className="text-[#a8889a]">불러오는 중...</p>
               ) : (
                 <DeskCanvas
                   objects={objects}
@@ -163,14 +151,14 @@ export default function MainPage() {
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="mt-6 rounded-full bg-gradient-to-r from-angel-pink-300 to-strawberry-milk-300 px-7 py-3 text-lg font-bold text-white shadow-md transition hover:scale-105 disabled:opacity-50"
+            className="mt-6 rounded-full bg-gradient-to-r from-angel-pink-300 to-strawberry-milk-300 px-8 py-3.5 text-xl font-bold text-white shadow-md transition hover:scale-105 disabled:opacity-50"
           >
             {isSaving ? "저장 중... 🫶" : "💾 배치 저장하기"}
           </button>
         </div>
 
         <div className="flex flex-col gap-6">
-          <FocusTimer onFocusLogged={refreshTodayFocus} />
+          <FocusTimer />
           <VisualFeedback todayFocusSeconds={todayFocusSeconds} progressRate={progressRate} />
           <YoutubeMixer
             isReady={youtube.isReady}

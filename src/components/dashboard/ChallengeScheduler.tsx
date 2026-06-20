@@ -43,7 +43,7 @@ function ChallengeCard({
             />
           </div>
         ) : (
-          <h3 className="font-cute text-lg text-[#3a6e58]">📚 {challenge.title}</h3>
+          <h3 className="text-lg text-[#3a6e58]">📚 {challenge.title}</h3>
         )}
         <span className="text-xs text-[#a8889a]">
           {challenge.currentPages}/{challenge.totalPages}p · 하루 목표 {challenge.dailyGoal}p
@@ -134,7 +134,7 @@ export default function ChallengeScheduler() {
   return (
     <div className="space-y-6">
       <div className="rounded-3xl border-2 border-white/70 bg-white/80 p-5 shadow-md backdrop-blur">
-        <h2 className="font-cute mb-4 text-xl text-[#ff6fa5]">✏️ 완독 챌린지 등록</h2>
+        <h2 className="mb-4 text-xl text-[#ff6fa5]">✏️ 완독 챌린지 등록</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <input
             value={title}

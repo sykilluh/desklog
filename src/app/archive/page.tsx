@@ -88,10 +88,10 @@ export default function ArchivePage() {
 
   return (
     <main className="min-h-screen p-6 text-[#5b4a52] sm:p-8">
-      <a href="/" className="mb-4 inline-block font-cute text-sm text-[#a8889a]">
+      <a href="/" className="mb-4 inline-block text-sm text-[#a8889a]">
         ← 데스크로 돌아가기
       </a>
-      <h1 className="font-cute mb-6 text-3xl text-[#ff6fa5]">🎀 SNS 공유 카드</h1>
+      <h1 className="mb-6 text-3xl text-[#ff6fa5]">🎀 SNS 공유 카드</h1>
 
       <div className="flex flex-col items-start gap-6 lg:flex-row">
         <ShareCardTemplate
@@ -105,7 +105,7 @@ export default function ArchivePage() {
 
         <div className="w-full max-w-sm space-y-4">
           <div className="rounded-3xl border-2 border-white/70 bg-white/80 p-4 shadow-md backdrop-blur">
-            <p className="font-cute mb-2 text-sm text-[#a8889a]">카드 제목 수정</p>
+            <p className="mb-2 text-sm text-[#a8889a]">카드 제목 수정</p>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}

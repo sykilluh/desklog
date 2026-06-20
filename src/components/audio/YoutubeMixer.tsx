@@ -63,7 +63,7 @@ export default function YoutubeMixer({
 
   return (
     <div className="rounded-3xl border-2 border-sky-blue-200 bg-gradient-to-br from-sky-blue-50 to-mint-50 p-5 shadow-md">
-      <p className="font-cute mb-1 text-lg text-[#3a8fb8]">🎧 플레이리스트</p>
+      <p className="mb-1 text-lg text-[#3a8fb8]">🎧 플레이리스트</p>
       <p className="mb-3 text-xs text-[#8fb0c4]">턴테이블을 켜면 이 음악도 함께 재생/정지돼요!</p>
 
       <div className="flex gap-2">

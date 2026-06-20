@@ -83,7 +83,7 @@ export default function TodoChecklist() {
 
   return (
     <div className="rounded-3xl border-2 border-white/70 bg-white/80 p-5 shadow-md backdrop-blur">
-      <h2 className="font-cute mb-4 text-xl text-[#3a8fb8]">✅ 할 일 체크리스트</h2>
+      <h2 className="mb-4 text-xl text-[#3a8fb8]">✅ 할 일 체크리스트</h2>
 
       <div className="mb-4 flex gap-2">
         <input

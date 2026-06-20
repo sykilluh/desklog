@@ -39,6 +39,17 @@ export async function waterPlantToday(userId: number) {
   return getPlantStatus(userId);
 }
 
+export async function applyCompletionBuff(userId: number) {
+  const today = toDateOnly(new Date());
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    return { userId, wateredDate: d };
+  });
+
+  await prisma.plantWatering.createMany({ data: days, skipDuplicates: true });
+}
+
 export async function getPlantStatus(userId: number) {
   const today = toDateOnly(new Date());
   const { streak, totalWaterings } = await computeStreak(userId);

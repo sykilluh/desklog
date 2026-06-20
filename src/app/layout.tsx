@@ -1,26 +1,14 @@
 import type { Metadata } from "next";
-import { Jua, Gaegu, Noto_Sans_KR } from "next/font/google";
+import { Noto_Sans_KR } from "next/font/google";
 import AuthSessionProvider from "@/components/providers/AuthSessionProvider";
 import PlaylistProvider from "@/components/providers/PlaylistProvider";
+import FocusTimerProvider from "@/components/providers/FocusTimerProvider";
+import FloatingControlBar from "@/components/layout/FloatingControlBar";
 import "./globals.css";
-
-const jua = Jua({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-jua",
-  display: "swap",
-});
-
-const gaegu = Gaegu({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-gaegu",
-  display: "swap",
-});
 
 const notoSansKr = Noto_Sans_KR({
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
+  weight: ["400", "500", "700", "900"],
   variable: "--font-noto",
   display: "swap",
 });
@@ -37,9 +25,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className={`${jua.variable} ${gaegu.variable} ${notoSansKr.variable} antialiased`}>
+      <body className={`${notoSansKr.variable} antialiased`}>
         <AuthSessionProvider>
-          <PlaylistProvider>{children}</PlaylistProvider>
+          <PlaylistProvider>
+            <FocusTimerProvider>
+              {children}
+              <FloatingControlBar />
+            </FocusTimerProvider>
+          </PlaylistProvider>
         </AuthSessionProvider>
       </body>
     </html>

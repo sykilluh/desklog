@@ -6,7 +6,7 @@ export const CARD_BACKGROUNDS = [
 ] as const;
 
 export const CARD_FONTS = [
-  { id: "cute", label: "큐트", className: "font-cute" },
+  { id: "cute", label: "큐트", className: "font-bold" },
   { id: "round", label: "라운드", className: "font-round" },
   { id: "sans", label: "Sans", className: "font-sans" },
 ] as const;

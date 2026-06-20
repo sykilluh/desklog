@@ -12,7 +12,7 @@ export default function ChallengePage() {
           🌱 식물 키우기 →
         </a>
       </div>
-      <h1 className="font-cute mb-6 text-3xl text-[#3a6e58]">📖 독서 기록 & 할 일</h1>
+      <h1 className="mb-6 text-3xl text-[#3a6e58]">📖 독서 기록 & 할 일</h1>
       <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 lg:grid-cols-[1.2fr_1fr]">
         <ChallengeScheduler />
         <TodoChecklist />

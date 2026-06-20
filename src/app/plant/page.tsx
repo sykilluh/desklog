@@ -66,12 +66,12 @@ export default function PlantPage() {
       <a href="/" className="mb-4 inline-block text-sm text-[#a8889a]">
         ← 데스크로 돌아가기
       </a>
-      <h1 className="font-cute mb-6 text-3xl text-[#3a6e58]">🌱 내 식물 키우기</h1>
+      <h1 className="mb-6 text-3xl text-[#3a6e58]">🌱 내 식물 키우기</h1>
 
       <div className="mx-auto max-w-md space-y-6">
         <div className="rounded-3xl border-2 border-white/70 bg-white/80 p-8 text-center shadow-md backdrop-blur">
           <p className="mb-2 text-8xl">{stage.emoji}</p>
-          <p className="font-cute text-xl text-[#3a6e58]">{stage.label}</p>
+          <p className="text-xl text-[#3a6e58]">{stage.label}</p>
           <p className="mt-2 text-sm text-[#a8889a]">
             🔥 연속 {status?.streak ?? 0}일째 물 주는 중!
           </p>
