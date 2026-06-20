@@ -2,9 +2,18 @@
 
 import { useDraggable } from "@dnd-kit/core";
 import { getEmoji } from "@/lib/objectCatalog";
+import SoundSlider from "@/components/audio/SoundSlider";
 import type { DeskObjectDTO } from "@/types/desk";
 
-export default function DeskObjectItem({ object }: { object: DeskObjectDTO }) {
+export default function DeskObjectItem({
+  object,
+  onToggleAudio,
+  onVolumeChange,
+}: {
+  object: DeskObjectDTO;
+  onToggleAudio: (object: DeskObjectDTO) => void;
+  onVolumeChange: (id: number, volume: number) => void;
+}) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `placed-${object.id}`,
     data: { source: "placed", id: object.id },
@@ -13,14 +22,20 @@ export default function DeskObjectItem({ object }: { object: DeskObjectDTO }) {
   return (
     <div
       ref={setNodeRef}
-      {...listeners}
-      {...attributes}
       style={{ left: `${object.posX}%`, top: `${object.posY}%` }}
-      className={`absolute -translate-x-1/2 -translate-y-1/2 cursor-grab select-none text-3xl ${
+      className={`absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 ${
         isDragging ? "opacity-40" : ""
       }`}
     >
-      {getEmoji(object.objectName)}
+      <span {...listeners} {...attributes} className="cursor-grab select-none text-3xl">
+        {getEmoji(object.objectName)}
+      </span>
+      <SoundSlider
+        volume={object.volume}
+        isActive={object.isActive}
+        onToggle={() => onToggleAudio(object)}
+        onVolumeChange={(volume) => onVolumeChange(object.id, volume)}
+      />
     </div>
   );
 }
