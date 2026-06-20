@@ -11,8 +11,8 @@ function formatTime(totalSeconds: number) {
   return `${minutes}:${seconds}`;
 }
 
-export default function FocusTimer() {
-  const { logFocusSeconds } = useFocusLogs();
+export default function FocusTimer({ onFocusLogged }: { onFocusLogged?: () => void }) {
+  const { logFocusSeconds } = useFocusLogs(onFocusLogged);
   const {
     mode,
     phase,
