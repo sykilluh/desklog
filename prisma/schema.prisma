@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int            @id @default(autoincrement())
+  email        String         @unique
+  password     String
+  nickname     String?
+  createdAt    DateTime       @default(now()) @map("created_at")
+  desks        DeskObject[]
+  challenges   Challenge[]
+  focusLogs    FocusLog[]
+
+  @@map("users")
+}
+
+model DeskObject {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  user       User     @relation(fields: [userId], references: [id])
+  objectName String   @map("object_name")
+  posX       Float    @map("pos_x")
+  posY       Float    @map("pos_y")
+  isActive   Boolean  @default(true) @map("is_active")
+  volume     Float    @default(0.5)
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("desk_objects")
+}
+
+model Challenge {
+  id              Int       @id @default(autoincrement())
+  userId          Int       @map("user_id")
+  user            User      @relation(fields: [userId], references: [id])
+  title           String
+  totalPages      Int       @map("total_pages")
+  currentPages    Int       @default(0) @map("current_pages")
+  startDate       DateTime  @map("start_date")
+  endDate         DateTime  @map("end_date")
+  totalFocusTime  Int       @default(0) @map("total_focus_time")
+  status          ChallengeStatus @default(PROGRESS)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  focusLogs       FocusLog[]
+
+  @@map("challenges")
+}
+
+enum ChallengeStatus {
+  PROGRESS
+  COMPLETED
+  FAIL
+}
+
+model FocusLog {
+  id              Int        @id @default(autoincrement())
+  userId          Int        @map("user_id")
+  user            User       @relation(fields: [userId], references: [id])
+  challengeId     Int?       @map("challenge_id")
+  challenge       Challenge? @relation(fields: [challengeId], references: [id])
+  focusDuration   Int        @map("focus_duration")
+  audioPresetName String?    @map("audio_preset_name")
+  createdAt       DateTime   @default(now()) @map("created_at")
+
+  @@map("focus_logs")
+}
