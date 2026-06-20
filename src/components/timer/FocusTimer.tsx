@@ -1,6 +1,6 @@
 "use client";
 
-import { useFocusTimer } from "@/hooks/useFocusTimer";
+import { POMODORO_PRESETS, useFocusTimer } from "@/hooks/useFocusTimer";
 import { useFocusLogs } from "@/hooks/useFocusLogs";
 
 function formatTime(totalSeconds: number) {
@@ -13,8 +13,19 @@ function formatTime(totalSeconds: number) {
 
 export default function FocusTimer() {
   const { logFocusSeconds } = useFocusLogs();
-  const { mode, phase, isRunning, seconds, switchMode, start, pause, reset, stopAndLog } =
-    useFocusTimer(logFocusSeconds);
+  const {
+    mode,
+    phase,
+    preset,
+    isRunning,
+    seconds,
+    switchMode,
+    selectPreset,
+    start,
+    pause,
+    reset,
+    stopAndLog,
+  } = useFocusTimer(logFocusSeconds);
 
   return (
     <div className="rounded-xl bg-zinc-900 p-5">
@@ -36,6 +47,25 @@ export default function FocusTimer() {
           자유 스톱워치
         </button>
       </div>
+
+      {mode === "pomodoro" && (
+        <div className="mb-3 flex gap-1.5">
+          {POMODORO_PRESETS.map((p) => (
+            <button
+              key={p.focusMinutes}
+              onClick={() => selectPreset(p)}
+              disabled={isRunning}
+              className={`rounded-md px-2.5 py-1 text-xs disabled:opacity-40 ${
+                preset.focusMinutes === p.focusMinutes
+                  ? "bg-zinc-700 text-zinc-100"
+                  : "bg-zinc-800 text-zinc-400"
+              }`}
+            >
+              {p.focusMinutes}분
+            </button>
+          ))}
+        </div>
+      )}
 
       {mode === "pomodoro" && (
         <p className="mb-1 text-xs text-zinc-400">{phase === "focus" ? "집중 시간" : "휴식 시간"}</p>

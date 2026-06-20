@@ -2,8 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const POMODORO_FOCUS_SECONDS = 25 * 60;
-const POMODORO_BREAK_SECONDS = 5 * 60;
+export const POMODORO_PRESETS = [
+  { focusMinutes: 25, breakMinutes: 5 },
+  { focusMinutes: 45, breakMinutes: 10 },
+  { focusMinutes: 60, breakMinutes: 15 },
+  { focusMinutes: 90, breakMinutes: 20 },
+];
 
 export type TimerMode = "pomodoro" | "stopwatch";
 export type TimerPhase = "focus" | "break";
@@ -11,8 +15,9 @@ export type TimerPhase = "focus" | "break";
 export function useFocusTimer(onFocusComplete: (focusSeconds: number) => void) {
   const [mode, setMode] = useState<TimerMode>("pomodoro");
   const [phase, setPhase] = useState<TimerPhase>("focus");
+  const [preset, setPreset] = useState(POMODORO_PRESETS[0]);
   const [isRunning, setIsRunning] = useState(false);
-  const [seconds, setSeconds] = useState(POMODORO_FOCUS_SECONDS);
+  const [seconds, setSeconds] = useState(POMODORO_PRESETS[0].focusMinutes * 60);
   const focusElapsedRef = useRef(0);
 
   useEffect(() => {
@@ -28,13 +33,13 @@ export function useFocusTimer(onFocusComplete: (focusSeconds: number) => void) {
         if (prev <= 1) {
           if (phase === "focus") {
             focusElapsedRef.current += 1;
-            onFocusComplete(POMODORO_FOCUS_SECONDS);
+            onFocusComplete(preset.focusMinutes * 60);
             focusElapsedRef.current = 0;
             setPhase("break");
-            return POMODORO_BREAK_SECONDS;
+            return preset.breakMinutes * 60;
           }
           setPhase("focus");
-          return POMODORO_FOCUS_SECONDS;
+          return preset.focusMinutes * 60;
         }
 
         if (phase === "focus") focusElapsedRef.current += 1;
@@ -43,15 +48,29 @@ export function useFocusTimer(onFocusComplete: (focusSeconds: number) => void) {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isRunning, mode, phase, onFocusComplete]);
+  }, [isRunning, mode, phase, preset, onFocusComplete]);
 
-  const switchMode = useCallback((nextMode: TimerMode) => {
-    setIsRunning(false);
-    setMode(nextMode);
-    setPhase("focus");
-    focusElapsedRef.current = 0;
-    setSeconds(nextMode === "pomodoro" ? POMODORO_FOCUS_SECONDS : 0);
-  }, []);
+  const switchMode = useCallback(
+    (nextMode: TimerMode) => {
+      setIsRunning(false);
+      setMode(nextMode);
+      setPhase("focus");
+      focusElapsedRef.current = 0;
+      setSeconds(nextMode === "pomodoro" ? preset.focusMinutes * 60 : 0);
+    },
+    [preset]
+  );
+
+  const selectPreset = useCallback(
+    (nextPreset: { focusMinutes: number; breakMinutes: number }) => {
+      setIsRunning(false);
+      setPreset(nextPreset);
+      setPhase("focus");
+      focusElapsedRef.current = 0;
+      setSeconds(nextPreset.focusMinutes * 60);
+    },
+    []
+  );
 
   const start = useCallback(() => setIsRunning(true), []);
   const pause = useCallback(() => setIsRunning(false), []);
@@ -60,8 +79,8 @@ export function useFocusTimer(onFocusComplete: (focusSeconds: number) => void) {
     setIsRunning(false);
     setPhase("focus");
     focusElapsedRef.current = 0;
-    setSeconds(mode === "pomodoro" ? POMODORO_FOCUS_SECONDS : 0);
-  }, [mode]);
+    setSeconds(mode === "pomodoro" ? preset.focusMinutes * 60 : 0);
+  }, [mode, preset]);
 
   const stopAndLog = useCallback(() => {
     setIsRunning(false);
@@ -70,8 +89,20 @@ export function useFocusTimer(onFocusComplete: (focusSeconds: number) => void) {
     }
     focusElapsedRef.current = 0;
     setPhase("focus");
-    setSeconds(mode === "pomodoro" ? POMODORO_FOCUS_SECONDS : 0);
-  }, [mode, onFocusComplete]);
+    setSeconds(mode === "pomodoro" ? preset.focusMinutes * 60 : 0);
+  }, [mode, preset, onFocusComplete]);
 
-  return { mode, phase, isRunning, seconds, switchMode, start, pause, reset, stopAndLog };
+  return {
+    mode,
+    phase,
+    preset,
+    isRunning,
+    seconds,
+    switchMode,
+    selectPreset,
+    start,
+    pause,
+    reset,
+    stopAndLog,
+  };
 }
