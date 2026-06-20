@@ -97,46 +97,49 @@ export default function MainPage() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 p-8 text-zinc-100">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">데스크로그 · 가상 데스크</h1>
-        <div className="flex items-center gap-3">
+    <main className="min-h-screen p-6 text-[#5b4a52] sm:p-8">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <h1 className="font-cute text-3xl text-[#ff6fa5] drop-shadow-sm">
+          🩷 데스크로그 · 나만의 데스크
+        </h1>
+        <div className="flex flex-wrap items-center gap-3">
           <a
             href="/challenge"
-            className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-900"
+            className="flex items-center gap-1.5 rounded-full border-2 border-mint-200 bg-white px-5 py-2.5 text-base font-bold text-[#5b4a52] shadow-sm transition hover:scale-105 hover:bg-mint-50"
           >
-            챌린지 관리
+            📖 챌린지
           </a>
           <a
             href="/archive"
-            className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-900"
+            className="flex items-center gap-1.5 rounded-full border-2 border-sky-blue-200 bg-white px-5 py-2.5 text-base font-bold text-[#5b4a52] shadow-sm transition hover:scale-105 hover:bg-sky-blue-50"
           >
-            공유 카드
+            🎀 공유 카드
           </a>
           <AudioController isMuted={isMuted} onToggleMute={toggleMute} />
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-900"
+            className="flex items-center gap-1.5 rounded-full border-2 border-strawberry-milk-200 bg-white px-5 py-2.5 text-base font-bold text-[#5b4a52] shadow-sm transition hover:scale-105 hover:bg-strawberry-milk-50"
           >
-            로그아웃
+            🚪 로그아웃
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">
         <div>
           <DndContext onDragEnd={handleDragEnd}>
             <ObjectInventory />
 
             <div className="mt-6">
               {isLoading ? (
-                <p className="text-zinc-400">불러오는 중...</p>
+                <p className="font-cute text-[#a8889a]">불러오는 중...</p>
               ) : (
                 <DeskCanvas
                   objects={objects}
                   onToggleAudio={handleToggleAudio}
                   onVolumeChange={handleVolumeChange}
                   isTurntableSpinning={youtube.isPlaying}
+                  turntableVideoId={youtube.currentVideoId}
                 />
               )}
             </div>
@@ -145,9 +148,9 @@ export default function MainPage() {
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="mt-6 rounded-lg bg-amber-500 px-5 py-2 font-medium text-zinc-900 hover:bg-amber-400 disabled:opacity-50"
+            className="mt-6 rounded-full bg-gradient-to-r from-angel-pink-300 to-strawberry-milk-300 px-7 py-3 text-lg font-bold text-white shadow-md transition hover:scale-105 disabled:opacity-50"
           >
-            {isSaving ? "저장 중..." : "배치 저장"}
+            {isSaving ? "저장 중... 🫶" : "💾 배치 저장하기"}
           </button>
         </div>
 

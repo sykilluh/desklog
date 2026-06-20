@@ -18,9 +18,9 @@ export default function ArchivePage() {
   const [stats, setStats] = useState<FocusStatistics | null>(null);
   const [challenges, setChallenges] = useState<ChallengeDTO[]>([]);
   const [config, setConfig] = useState<ShareCardConfig>({
-    backgroundId: "midnight",
-    fontId: "sans",
-    sticker: "📚",
+    backgroundId: "angel-pink",
+    fontId: "cute",
+    sticker: "🩷",
   });
 
   useEffect(() => {
@@ -45,8 +45,11 @@ export default function ArchivePage() {
   const completed = challenges.find((c) => c.status === "COMPLETED");
 
   return (
-    <main className="min-h-screen bg-zinc-950 p-8 text-zinc-100">
-      <h1 className="mb-6 text-2xl font-semibold tracking-tight">SNS 공유 카드</h1>
+    <main className="min-h-screen p-6 text-[#5b4a52] sm:p-8">
+      <a href="/" className="mb-4 inline-block font-cute text-sm text-[#a8889a]">
+        ← 데스크로 돌아가기
+      </a>
+      <h1 className="font-cute mb-6 text-3xl text-[#ff6fa5]">🎀 SNS 공유 카드</h1>
 
       <div className="flex flex-col items-start gap-6 lg:flex-row">
         <ShareCardTemplate
@@ -62,9 +65,9 @@ export default function ArchivePage() {
           <CardCustomizer config={config} onChange={setConfig} />
           <button
             onClick={handleDownload}
-            className="w-full rounded-lg bg-amber-500 px-4 py-2 font-medium text-zinc-900 hover:bg-amber-400"
+            className="w-full rounded-full bg-gradient-to-r from-angel-pink-300 to-strawberry-milk-300 px-4 py-2.5 font-bold text-white shadow hover:scale-105"
           >
-            PNG로 다운로드
+            💾 PNG로 다운로드
           </button>
         </div>
       </div>

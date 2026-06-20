@@ -10,6 +10,11 @@ export const OBJECT_CATALOG: ObjectCatalogEntry[] = [
   { objectName: "plant", label: "식물", emoji: "🌱" },
   { objectName: "book", label: "책", emoji: "📚" },
   { objectName: "cup", label: "머그컵", emoji: "☕" },
+  { objectName: "doll", label: "인형", emoji: "🧸" },
+  { objectName: "mouse", label: "마우스", emoji: "🖱️" },
+  { objectName: "monitor", label: "모니터", emoji: "🖥️" },
+  { objectName: "candle", label: "캔들", emoji: "🕯️" },
+  { objectName: "frame", label: "액자", emoji: "🖼️" },
 ];
 
 export function getEmoji(objectName: string) {

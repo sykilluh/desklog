@@ -16,6 +16,7 @@ interface YTPlayer {
   loadPlaylist(options: { list: string }): void;
   cueVideoById(videoId: string): void;
   loadVideoById(videoId: string): void;
+  getVideoData(): { video_id?: string; title?: string };
   destroy(): void;
 }
 

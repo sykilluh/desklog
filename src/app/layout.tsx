@@ -1,22 +1,25 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Jua, Gaegu } from "next/font/google";
 import AuthSessionProvider from "@/components/providers/AuthSessionProvider";
 import "./globals.css";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
+const jua = Jua({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-jua",
+  display: "swap",
 });
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+
+const gaegu = Gaegu({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-gaegu",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "DeskLog",
-  description: "나만의 디지털 데스크에서 독서와 집중을 기록하는 공간",
+  description: "나만의 파스텔 데스크에서 독서와 집중을 기록하는 공간",
 };
 
 export default function RootLayout({
@@ -26,9 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${jua.variable} ${gaegu.variable} antialiased`}>
         <AuthSessionProvider>{children}</AuthSessionProvider>
       </body>
     </html>

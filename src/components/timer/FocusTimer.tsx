@@ -28,37 +28,41 @@ export default function FocusTimer({ onFocusLogged }: { onFocusLogged?: () => vo
   } = useFocusTimer(logFocusSeconds);
 
   return (
-    <div className="rounded-xl bg-zinc-900 p-5">
+    <div className="rounded-3xl border-2 border-white/70 bg-white/80 p-5 shadow-md backdrop-blur">
       <div className="mb-3 flex gap-2">
         <button
           onClick={() => switchMode("pomodoro")}
-          className={`rounded-md px-3 py-1 text-xs ${
-            mode === "pomodoro" ? "bg-amber-500 text-zinc-900" : "bg-zinc-800 text-zinc-300"
+          className={`rounded-full px-3 py-1.5 text-sm font-bold transition ${
+            mode === "pomodoro"
+              ? "bg-gradient-to-r from-angel-pink-300 to-strawberry-milk-300 text-white shadow"
+              : "bg-angel-pink-50 text-[#a8889a]"
           }`}
         >
-          뽀모도로
+          🍅 뽀모도로
         </button>
         <button
           onClick={() => switchMode("stopwatch")}
-          className={`rounded-md px-3 py-1 text-xs ${
-            mode === "stopwatch" ? "bg-amber-500 text-zinc-900" : "bg-zinc-800 text-zinc-300"
+          className={`rounded-full px-3 py-1.5 text-sm font-bold transition ${
+            mode === "stopwatch"
+              ? "bg-gradient-to-r from-sky-blue-300 to-mint-300 text-white shadow"
+              : "bg-sky-blue-50 text-[#a8889a]"
           }`}
         >
-          자유 스톱워치
+          ⏱️ 스톱워치
         </button>
       </div>
 
       {mode === "pomodoro" && (
-        <div className="mb-3 flex gap-1.5">
+        <div className="mb-3 flex flex-wrap gap-1.5">
           {POMODORO_PRESETS.map((p) => (
             <button
               key={p.focusMinutes}
               onClick={() => selectPreset(p)}
               disabled={isRunning}
-              className={`rounded-md px-2.5 py-1 text-xs disabled:opacity-40 ${
+              className={`rounded-full px-3 py-1 text-xs font-bold disabled:opacity-40 ${
                 preset.focusMinutes === p.focusMinutes
-                  ? "bg-zinc-700 text-zinc-100"
-                  : "bg-zinc-800 text-zinc-400"
+                  ? "bg-mint-200 text-[#3a6e58]"
+                  : "bg-mint-50 text-[#8fb8a6]"
               }`}
             >
               {p.focusMinutes}분
@@ -68,26 +72,42 @@ export default function FocusTimer({ onFocusLogged }: { onFocusLogged?: () => vo
       )}
 
       {mode === "pomodoro" && (
-        <p className="mb-1 text-xs text-zinc-400">{phase === "focus" ? "집중 시간" : "휴식 시간"}</p>
+        <p className="font-cute mb-1 text-xs text-[#a8889a]">
+          {phase === "focus" ? "🌷 집중 시간" : "🍓 휴식 시간"}
+        </p>
       )}
 
-      <p className="font-mono text-4xl tabular-nums">{formatTime(seconds)}</p>
+      <p className="font-cute text-5xl tabular-nums text-[#ff6fa5] drop-shadow-sm">
+        {formatTime(seconds)}
+      </p>
 
-      <div className="mt-4 flex gap-2">
+      <div className="mt-4 flex flex-wrap gap-2">
         {isRunning ? (
-          <button onClick={pause} className="rounded-md bg-zinc-700 px-4 py-1.5 text-sm">
-            일시정지
+          <button
+            onClick={pause}
+            className="rounded-full bg-sky-blue-200 px-4 py-1.5 text-sm font-bold text-[#2b6f8f]"
+          >
+            ⏸ 일시정지
           </button>
         ) : (
-          <button onClick={start} className="rounded-md bg-amber-500 px-4 py-1.5 text-sm text-zinc-900">
-            시작
+          <button
+            onClick={start}
+            className="rounded-full bg-gradient-to-r from-angel-pink-300 to-strawberry-milk-300 px-4 py-1.5 text-sm font-bold text-white shadow"
+          >
+            ▶ 시작
           </button>
         )}
-        <button onClick={reset} className="rounded-md bg-zinc-800 px-4 py-1.5 text-sm text-zinc-300">
-          초기화
+        <button
+          onClick={reset}
+          className="rounded-full bg-angel-pink-50 px-4 py-1.5 text-sm font-bold text-[#a8889a]"
+        >
+          ↺ 초기화
         </button>
-        <button onClick={stopAndLog} className="rounded-md bg-zinc-800 px-4 py-1.5 text-sm text-zinc-300">
-          종료·기록
+        <button
+          onClick={stopAndLog}
+          className="rounded-full bg-mint-100 px-4 py-1.5 text-sm font-bold text-[#3a6e58]"
+        >
+          ✅ 종료·기록
         </button>
       </div>
     </div>

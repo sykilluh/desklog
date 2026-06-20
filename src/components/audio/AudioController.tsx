@@ -10,9 +10,9 @@ export default function AudioController({
   return (
     <button
       onClick={onToggleMute}
-      className="rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-800"
+      className="flex items-center gap-1.5 rounded-full border-2 border-angel-pink-200 bg-white px-5 py-2.5 text-base font-bold text-[#5b4a52] shadow-sm transition hover:scale-105 hover:bg-angel-pink-50"
     >
-      {isMuted ? "🔇 전체 음소거 해제" : "🔊 전체 음소거"}
+      {isMuted ? "🔇 음소거 해제" : "🔊 전체 음소거"}
     </button>
   );
 }

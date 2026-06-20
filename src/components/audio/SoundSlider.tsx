@@ -14,11 +14,11 @@ export default function SoundSlider({
   return (
     <div
       onPointerDown={(e) => e.stopPropagation()}
-      className="flex items-center gap-1.5 rounded-full bg-zinc-900/90 px-2 py-1 shadow-lg"
+      className="flex items-center gap-1.5 rounded-full border border-angel-pink-100 bg-white/95 px-2.5 py-1 shadow-md"
     >
       <button
         onClick={onToggle}
-        className={`text-xs ${isActive ? "text-amber-400" : "text-zinc-500"}`}
+        className={`text-sm ${isActive ? "text-strawberry-milk-400" : "text-[#cdb8c4]"}`}
       >
         {isActive ? "🔊" : "🔈"}
       </button>
@@ -30,7 +30,7 @@ export default function SoundSlider({
           step={0.01}
           value={volume}
           onChange={(e) => onVolumeChange(Number(e.target.value))}
-          className="h-1 w-16 accent-amber-400"
+          className="h-1 w-16 accent-angel-pink-300"
         />
       )}
     </div>

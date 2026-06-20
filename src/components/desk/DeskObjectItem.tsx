@@ -11,11 +11,13 @@ export default function DeskObjectItem({
   onToggleAudio,
   onVolumeChange,
   isSpinning,
+  videoId,
 }: {
   object: DeskObjectDTO;
   onToggleAudio: (object: DeskObjectDTO) => void;
   onVolumeChange: (id: number, volume: number) => void;
   isSpinning: boolean;
+  videoId: string | null;
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `placed-${object.id}`,
@@ -32,9 +34,9 @@ export default function DeskObjectItem({
     >
       <span {...listeners} {...attributes} className="cursor-grab select-none">
         {object.objectName === "turntable" ? (
-          <TurntableVisual isSpinning={isSpinning} />
+          <TurntableVisual isSpinning={isSpinning} videoId={videoId} />
         ) : (
-          <span className="text-3xl">{getEmoji(object.objectName)}</span>
+          <span className="text-3xl drop-shadow-sm">{getEmoji(object.objectName)}</span>
         )}
       </span>
       <SoundSlider

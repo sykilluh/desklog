@@ -28,6 +28,7 @@ export function useYoutubePlayer(containerId: string) {
   const playerRef = useRef<YTPlayer | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -43,6 +44,8 @@ export function useYoutubePlayer(containerId: string) {
           onStateChange: (event) => {
             if (!window.YT) return;
             setIsPlaying(event.data === window.YT.PlayerState.PLAYING);
+            const videoId = event.target.getVideoData()?.video_id;
+            if (videoId) setCurrentVideoId(videoId);
           },
         },
       });
@@ -56,6 +59,7 @@ export function useYoutubePlayer(containerId: string) {
 
   const loadVideo = useCallback((videoId: string) => {
     playerRef.current?.loadVideoById(videoId);
+    setCurrentVideoId(videoId);
   }, []);
 
   const loadPlaylist = useCallback((listId: string) => {
@@ -68,5 +72,14 @@ export function useYoutubePlayer(containerId: string) {
     playerRef.current?.setVolume(Math.round(volume * 100));
   }, []);
 
-  return { isReady, isPlaying, loadVideo, loadPlaylist, play, pause, setVolume };
+  return {
+    isReady,
+    isPlaying,
+    currentVideoId,
+    loadVideo,
+    loadPlaylist,
+    play,
+    pause,
+    setVolume,
+  };
 }

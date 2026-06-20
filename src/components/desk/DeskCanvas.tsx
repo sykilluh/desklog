@@ -11,20 +11,22 @@ export default function DeskCanvas({
   onToggleAudio,
   onVolumeChange,
   isTurntableSpinning,
+  turntableVideoId,
 }: {
   objects: DeskObjectDTO[];
   onToggleAudio: (object: DeskObjectDTO) => void;
   onVolumeChange: (id: number, volume: number) => void;
   isTurntableSpinning: boolean;
+  turntableVideoId: string | null;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: DESK_CANVAS_ID });
 
   return (
     <div
       ref={setNodeRef}
-      className={`relative mx-auto aspect-[12/7] w-full max-w-[1200px] rounded-2xl border-2 transition-colors ${
-        isOver ? "border-amber-400" : "border-zinc-700"
-      } bg-gradient-to-br from-zinc-900 to-zinc-800`}
+      className={`relative mx-auto aspect-[12/7] w-full max-w-[1200px] rounded-[2rem] border-4 transition-colors ${
+        isOver ? "border-angel-pink-300" : "border-white/70"
+      } bg-gradient-to-br from-angel-pink-50 via-sky-blue-50 to-mint-50 shadow-xl`}
     >
       {objects.map((object) => (
         <DeskObjectItem
@@ -33,6 +35,7 @@ export default function DeskCanvas({
           onToggleAudio={onToggleAudio}
           onVolumeChange={onVolumeChange}
           isSpinning={object.objectName === "turntable" ? isTurntableSpinning : object.isActive}
+          videoId={object.objectName === "turntable" ? turntableVideoId : null}
         />
       ))}
     </div>

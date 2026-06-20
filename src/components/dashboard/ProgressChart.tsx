@@ -13,13 +13,13 @@ export default function ProgressChart({ milestones }: { milestones: WeeklyMilest
     <div className="h-40 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data}>
-          <XAxis dataKey="name" stroke="#71717a" fontSize={11} />
-          <YAxis stroke="#71717a" fontSize={11} />
+          <XAxis dataKey="name" stroke="#cdb8c4" fontSize={11} />
+          <YAxis stroke="#cdb8c4" fontSize={11} />
           <Tooltip
-            contentStyle={{ background: "#18181b", border: "1px solid #3f3f46" }}
-            labelStyle={{ color: "#e4e4e7" }}
+            contentStyle={{ background: "#fff5f8", border: "1px solid #ffc9dd", borderRadius: 12 }}
+            labelStyle={{ color: "#5b4a52" }}
           />
-          <Bar dataKey="targetPages" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="targetPages" fill="#ff9fc4" radius={[8, 8, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

@@ -1,17 +1,17 @@
 export const CARD_BACKGROUNDS = [
-  { id: "midnight", label: "미드나이트", className: "bg-gradient-to-br from-zinc-900 to-zinc-700" },
-  { id: "amber", label: "앰버", className: "bg-gradient-to-br from-amber-700 to-amber-900" },
-  { id: "forest", label: "포레스트", className: "bg-gradient-to-br from-emerald-900 to-zinc-900" },
-  { id: "rose", label: "로즈", className: "bg-gradient-to-br from-rose-800 to-zinc-900" },
+  { id: "angel-pink", label: "엔젤핑크", className: "bg-gradient-to-br from-angel-pink-200 to-strawberry-milk-200" },
+  { id: "sky-blue", label: "스카이블루", className: "bg-gradient-to-br from-sky-blue-200 to-mint-100" },
+  { id: "mint", label: "민트초코", className: "bg-gradient-to-br from-mint-200 to-sky-blue-100" },
+  { id: "strawberry-milk", label: "딸기우유", className: "bg-gradient-to-br from-strawberry-milk-300 to-angel-pink-100" },
 ] as const;
 
 export const CARD_FONTS = [
+  { id: "cute", label: "큐트", className: "font-cute" },
+  { id: "round", label: "라운드", className: "font-round" },
   { id: "sans", label: "Sans", className: "font-sans" },
-  { id: "serif", label: "Serif", className: "font-serif" },
-  { id: "mono", label: "Mono", className: "font-mono" },
 ] as const;
 
-export const CARD_STICKERS = ["📚", "🎧", "☕", "🌙", "✨"];
+export const CARD_STICKERS = ["📚", "🎧", "☕", "🌈", "✨", "🩷"];
 
 export interface ShareCardConfig {
   backgroundId: string;
