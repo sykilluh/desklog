@@ -1,10 +1,10 @@
-import { prisma } from "@/lib/prisma";
-import { DEMO_USER_ID } from "@/lib/constants";
+import { auth } from "@/lib/auth";
+import { ServiceError } from "@/lib/response";
 
-export async function ensureDemoUser() {
-  await prisma.user.upsert({
-    where: { id: DEMO_USER_ID },
-    update: {},
-    create: { id: DEMO_USER_ID, email: "demo@desklog.app", password: "demo", nickname: "Demo" },
-  });
+export async function getCurrentUserId() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new ServiceError("로그인이 필요합니다.", 401);
+  }
+  return Number(session.user.id);
 }

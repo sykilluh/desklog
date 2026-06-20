@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { ServiceError } from "@/lib/response";
-import { ensureDemoUser } from "@/lib/services/userService";
 import type { DeskObjectInput } from "@/types/desk";
 
 export async function getDeskObjects(userId: number) {
@@ -23,8 +22,6 @@ export async function saveDeskObjects(userId: number, objects: DeskObjectInput[]
       throw new ServiceError("좌표는 0~100(%) 범위여야 합니다.", 400);
     }
   }
-
-  await ensureDemoUser();
 
   return prisma.$transaction(async (tx) => {
     await tx.deskObject.deleteMany({ where: { userId } });

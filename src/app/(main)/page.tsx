@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { signOut } from "next-auth/react";
 import { DndContext, type DragEndEvent } from "@dnd-kit/core";
 import ObjectInventory from "@/components/desk/ObjectInventory";
 import DeskCanvas, { DESK_CANVAS_ID } from "@/components/desk/DeskCanvas";
@@ -113,6 +114,12 @@ export default function MainPage() {
             공유 카드
           </a>
           <AudioController isMuted={isMuted} onToggleMute={toggleMute} />
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-900"
+          >
+            로그아웃
+          </button>
         </div>
       </div>
 

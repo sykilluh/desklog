@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { ServiceError } from "@/lib/response";
-import { ensureDemoUser } from "@/lib/services/userService";
 
 export async function createFocusLog(
   userId: number,
@@ -11,8 +10,6 @@ export async function createFocusLog(
   if (!Number.isFinite(focusDuration) || focusDuration <= 0) {
     throw new ServiceError("집중 시간이 올바르지 않습니다.", 400);
   }
-
-  await ensureDemoUser();
 
   return prisma.focusLog.create({
     data: {

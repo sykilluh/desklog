@@ -1,4 +1,3 @@
-export const DEMO_USER_ID = 1;
 export const CANVAS_WIDTH = 1200;
 export const CANVAS_HEIGHT = 700;
 export const MAX_AUDIO_VOLUME = 1.0;

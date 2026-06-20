@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { ServiceError } from "@/lib/response";
-import { ensureDemoUser } from "@/lib/services/userService";
 import { computeDailyGoal, computeProgressRate, buildWeeklyMilestones } from "@/lib/scheduler";
 
 interface CreateChallengeInput {
@@ -33,8 +32,6 @@ export async function createChallenge(userId: number, input: CreateChallengeInpu
   if (new Date(input.endDate) <= new Date(input.startDate)) {
     throw new ServiceError("종료일은 시작일보다 이후여야 합니다.", 400);
   }
-
-  await ensureDemoUser();
 
   const challenge = await prisma.challenge.create({
     data: {
