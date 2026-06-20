@@ -35,3 +35,24 @@ export async function getTodayFocusSeconds(userId: number) {
 
   return logs.reduce((sum, log) => sum + log.focusDuration, 0);
 }
+
+export async function getTotalFocusSeconds(userId: number) {
+  const result = await prisma.focusLog.aggregate({
+    where: { userId },
+    _sum: { focusDuration: true },
+  });
+
+  return result._sum.focusDuration ?? 0;
+}
+
+export async function getMostUsedAudioPreset(userId: number) {
+  const logs = await prisma.focusLog.groupBy({
+    by: ["audioPresetName"],
+    where: { userId, audioPresetName: { not: null } },
+    _count: { audioPresetName: true },
+    orderBy: { _count: { audioPresetName: "desc" } },
+    take: 1,
+  });
+
+  return logs[0]?.audioPresetName ?? null;
+}

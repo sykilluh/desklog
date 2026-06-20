@@ -92,6 +92,12 @@ export default function MainPage() {
           >
             챌린지 관리
           </a>
+          <a
+            href="/archive"
+            className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-900"
+          >
+            공유 카드
+          </a>
           <AudioController isMuted={isMuted} onToggleMute={toggleMute} />
         </div>
       </div>
