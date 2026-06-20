@@ -19,6 +19,7 @@ model User {
   focusLogs    FocusLog[]
   todos        Todo[]
   plantWaterings PlantWatering[]
+  bookReviews  BookReview[]
 
   @@map("users")
 }
@@ -96,4 +97,18 @@ model PlantWatering {
 
   @@unique([userId, wateredDate])
   @@map("plant_waterings")
+}
+
+model BookReview {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  bookTitle String   @map("book_title")
+  summary   String?
+  review    String?
+  rating    Int      @default(5)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("book_reviews")
 }

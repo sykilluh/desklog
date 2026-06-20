@@ -113,6 +113,18 @@ export default function MainPage() {
             🌱 식물
           </a>
           <a
+            href="/asmr"
+            className="flex items-center gap-1.5 rounded-full border-2 border-sky-blue-200 bg-white px-6 py-3 text-lg font-bold text-[#5b4a52] shadow-sm transition hover:scale-105 hover:bg-sky-blue-50"
+          >
+            🌈 오늘의 ASMR
+          </a>
+          <a
+            href="/reviews"
+            className="flex items-center gap-1.5 rounded-full border-2 border-angel-pink-200 bg-white px-6 py-3 text-lg font-bold text-[#5b4a52] shadow-sm transition hover:scale-105 hover:bg-angel-pink-50"
+          >
+            ⭐ 후기
+          </a>
+          <a
             href="/archive"
             className="flex items-center gap-1.5 rounded-full border-2 border-sky-blue-200 bg-white px-6 py-3 text-lg font-bold text-[#5b4a52] shadow-sm transition hover:scale-105 hover:bg-sky-blue-50"
           >
