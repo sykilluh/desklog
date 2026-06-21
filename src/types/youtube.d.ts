@@ -13,7 +13,7 @@ interface YTPlayer {
   playVideo(): void;
   pauseVideo(): void;
   setVolume(volume: number): void;
-  loadPlaylist(options: { list: string }): void;
+  loadPlaylist(options: { list: string; listType: string }): void;
   cueVideoById(videoId: string): void;
   loadVideoById(videoId: string): void;
   getVideoData(): { video_id?: string; title?: string; author?: string };
@@ -26,7 +26,7 @@ interface YTPlayer {
 interface Window {
   YT?: {
     Player: new (elementId: string, options: YTPlayerOptions) => YTPlayer;
-    PlayerState: { PLAYING: number; PAUSED: number; ENDED: number };
+    PlayerState: { PLAYING: number; PAUSED: number; ENDED: number; BUFFERING: number; CUED: number };
   };
   onYouTubeIframeAPIReady?: () => void;
 }

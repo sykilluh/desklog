@@ -41,8 +41,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        cute: ["var(--font-jua)", "sans-serif"],
-        round: ["var(--font-gaegu)", "sans-serif"],
+        title: ["var(--font-title)", "sans-serif"],
+        cute: ["var(--font-title)", "sans-serif"],
+        round: ["var(--font-noto)", "sans-serif"],
       },
       animation: {
         "spin-slow": "spin 2.4s linear infinite",

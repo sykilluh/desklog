@@ -22,3 +22,7 @@ export function parseYoutubeUrl(input: string): ParsedYoutubeRef {
     return { videoId: trimmed.length === 11 ? trimmed : undefined };
   }
 }
+
+export function extractYoutubeVideoId(input: string): string | undefined {
+  return parseYoutubeUrl(input).videoId;
+}

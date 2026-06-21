@@ -17,9 +17,11 @@ model User {
   desks        DeskObject[]
   challenges   Challenge[]
   focusLogs    FocusLog[]
+  focusSessions FocusSession[]
   todos        Todo[]
   plantWaterings PlantWatering[]
   bookReviews  BookReview[]
+  deskSetting  DeskSetting?
 
   @@map("users")
 }
@@ -34,9 +36,22 @@ model DeskObject {
   isActive   Boolean  @default(true) @map("is_active")
   volume     Float    @default(0.5)
   scale      Float    @default(1)
+  imageData  String?  @map("image_data")
+  variant    String?
   updatedAt  DateTime @updatedAt @map("updated_at")
 
   @@map("desk_objects")
+}
+
+model DeskSetting {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @unique @map("user_id")
+  user         User     @relation(fields: [userId], references: [id])
+  backgroundId    String   @default("default") @map("background_id")
+  backgroundImage String?  @map("background_image")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("desk_settings")
 }
 
 model Challenge {
@@ -75,6 +90,23 @@ model FocusLog {
   @@map("focus_logs")
 }
 
+/// A named, resumable focus record (e.g. "수학 숙제", "토지 3권 읽기"). Unlike
+/// FocusLog (one-off completed timer entries), a session accumulates time
+/// across multiple start/pause cycles and can be picked later to build a
+/// share card.
+model FocusSession {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @map("user_id")
+  user         User     @relation(fields: [userId], references: [id])
+  name         String
+  totalSeconds Int      @default(0) @map("total_seconds")
+  isCompleted  Boolean  @default(false) @map("is_completed")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("focus_sessions")
+}
+
 model Todo {
   id           Int      @id @default(autoincrement())
   userId       Int      @map("user_id")
@@ -100,15 +132,22 @@ model PlantWatering {
 }
 
 model BookReview {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
-  user      User     @relation(fields: [userId], references: [id])
-  bookTitle String   @map("book_title")
-  summary   String?
-  review    String?
-  rating    Int      @default(5)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  user        User     @relation(fields: [userId], references: [id])
+  bookTitle   String   @map("book_title")
+  summary     String?
+  review      String?
+  quote       String?
+  food        String?
+  music       String?
+  showDuration Boolean @default(false) @map("show_duration")
+  showWeatherNote Boolean @default(false) @map("show_weather_note")
+  todayActivity String? @map("today_activity")
+  durationMinutes Int? @map("duration_minutes")
+  rating      Int      @default(5)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("book_reviews")
 }
