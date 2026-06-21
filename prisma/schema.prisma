@@ -9,19 +9,21 @@ datasource db {
 }
 
 model User {
-  id             Int             @id @default(autoincrement())
-  email          String          @unique
-  password       String
-  nickname       String?
-  createdAt      DateTime        @default(now()) @map("created_at")
-  desks          DeskObject[]
-  challenges     Challenge[]
-  focusLogs      FocusLog[]
-  focusSessions  FocusSession[]
-  todos          Todo[]
-  plantWaterings PlantWatering[]
-  bookReviews    BookReview[]
-  deskSetting    DeskSetting?
+  id               Int             @id @default(autoincrement())
+  email            String          @unique
+  password         String
+  nickname         String?
+  /// 주간/월간 분석 패널의 "목표 달성률"이 비교 대상으로 쓰는 하루 집중 목표(분).
+  dailyGoalMinutes Int             @default(60) @map("daily_goal_minutes")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  desks            DeskObject[]
+  challenges       Challenge[]
+  focusLogs        FocusLog[]
+  focusSessions    FocusSession[]
+  todos            Todo[]
+  plantWaterings   PlantWatering[]
+  bookReviews      BookReview[]
+  deskSetting      DeskSetting?
 
   @@map("users")
 }

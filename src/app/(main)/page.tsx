@@ -8,6 +8,7 @@ import ObjectInventory from "@/components/desk/ObjectInventory";
 import DeskCanvas, { DESK_CANVAS_ID } from "@/components/desk/DeskCanvas";
 import FocusTimer from "@/components/timer/FocusTimer";
 import FocusRecordsPanel from "@/components/timer/FocusRecordsPanel";
+import FocusAnalyticsPanel from "@/components/timer/FocusAnalyticsPanel";
 import TodayRecommendMenu from "@/components/timer/TodayRecommendMenu";
 import VisualFeedback from "@/components/timer/VisualFeedback";
 import YoutubeMixer from "@/components/audio/YoutubeMixer";
@@ -438,6 +439,7 @@ export default function MainPage() {
             onSeekBoost={handleSeekBoost}
           />
           <FocusTimer />
+          <FocusAnalyticsPanel />
           <FocusRecordsPanel onOpenRecommend={() => setShowRecommendMenu(true)} />
           <VisualFeedback todayFocusSeconds={todayFocusSeconds} progressRate={progressRate} />
         </div>
