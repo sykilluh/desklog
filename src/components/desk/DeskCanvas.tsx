@@ -11,6 +11,7 @@ export default function DeskCanvas({
   onToggleAudio,
   onVolumeChange,
   onScaleChange,
+  onResizeEnd,
   onImageChange,
   onVariantChange,
   onDelete,
@@ -27,6 +28,7 @@ export default function DeskCanvas({
   onToggleAudio: (object: DeskObjectDTO) => void;
   onVolumeChange: (id: number, volume: number) => void;
   onScaleChange: (id: number, scale: number) => void;
+  onResizeEnd: (id: number) => void;
   onImageChange: (id: number, dataUrl: string) => void;
   onVariantChange: (id: number, variant: string) => void;
   onDelete: (id: number) => void;
@@ -61,6 +63,7 @@ export default function DeskCanvas({
           onToggleAudio={onToggleAudio}
           onVolumeChange={onVolumeChange}
           onScaleChange={onScaleChange}
+          onResizeEnd={onResizeEnd}
           onImageChange={onImageChange}
           onVariantChange={onVariantChange}
           onDelete={onDelete}

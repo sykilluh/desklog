@@ -170,14 +170,25 @@ export default function TurntableVisual({
             />
           ))}
 
-          {/* small centered label — like a real vinyl label, not a full-disc cover */}
+          {/* video thumbnail fills almost the whole disc, just inside the
+              outermost groove ring, instead of sitting as a small center label.
+              YouTube's hqdefault thumbnail is a 4:3 frame with black letterbox
+              bars baked in around the actual 16:9 video — object-cover alone
+              just scales that whole 4:3 image (bars included), so the circle
+              still shows black top/bottom. Scaling the img up inside an
+              overflow-hidden circular mask crops those bars out instead. */}
           {thumbnailUrl ? (
-            <img
-              src={thumbnailUrl}
-              alt="재생 중인 영상 썸네일"
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white object-cover"
-              style={{ width: size * 0.36, height: size * 0.36 }}
-            />
+            <div
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border-2 border-white"
+              style={{ width: size * 0.92, height: size * 0.92 }}
+            >
+              <img
+                src={thumbnailUrl}
+                alt="재생 중인 영상 썸네일"
+                className="h-full w-full object-cover"
+                style={{ transform: "scale(1.34)" }}
+              />
+            </div>
           ) : (
             <div
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-gradient-to-br from-angel-pink-200 to-strawberry-milk-200"
