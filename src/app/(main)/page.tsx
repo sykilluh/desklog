@@ -17,7 +17,7 @@ import { useChallenges } from "@/hooks/useChallenges";
 import { DESK_BACKGROUND_OPTIONS, getDeskBackground } from "@/lib/deskBackgrounds";
 import { usePlaylist } from "@/components/providers/PlaylistProvider";
 import { useGlobalFocusTimer } from "@/components/providers/FocusTimerProvider";
-import { rectToPercent, clampPercentToFootprint, createBoundsClampModifier } from "@/hooks/useDragAndDrop";
+import { rectToPercent, clampPercentToFootprint } from "@/hooks/useDragAndDrop";
 import { getObjectFootprintPx } from "@/components/desk/DeskObjectItem";
 import type { DeskObjectDTO, DeskObjectInput } from "@/types/desk";
 
@@ -53,10 +53,6 @@ export default function MainPage() {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } })
   );
-
-  const boundsClampModifier = useState(() =>
-    createBoundsClampModifier(() => document.getElementById(DESK_CANVAS_ID))
-  )[0];
 
   function getCanvasRect() {
     return document.getElementById(DESK_CANVAS_ID)?.getBoundingClientRect() ?? null;
@@ -141,15 +137,28 @@ export default function MainPage() {
     setObjects((prev) => prev.map((obj) => (obj.id === id ? { ...obj, volume } : obj)));
   }
 
+  // Scale alone, no position clamping — while you're actively dragging the
+  // resize handle, the object is free to grow right up to (or past) the
+  // canvas edge without its center getting yanked back toward the middle on
+  // every pixel of growth. That live yanking was the "튕겨" bounce: as scale
+  // grew, the footprint grew, and clamping recomputed a smaller allowed
+  // range every frame, snapping the object inward mid-gesture.
   function handleScaleChange(id: number, scale: number) {
+    setObjects((prev) => prev.map((obj) => (obj.id === id ? { ...obj, scale } : obj)));
+  }
+
+  // Called once, on resize-handle release — snaps the object flush against
+  // the nearest edge only if its new (now-final) size pushed it out of
+  // bounds, instead of fighting the live drag the whole time.
+  function handleResizeEnd(id: number) {
     setObjects((prev) =>
       prev.map((obj) => {
         if (obj.id !== id) return obj;
         const canvasRect = getCanvasRect();
-        if (!canvasRect) return { ...obj, scale };
-        const footprint = getObjectFootprintPx(obj.objectName, scale);
+        if (!canvasRect) return obj;
+        const footprint = getObjectFootprintPx(obj.objectName, obj.scale);
         const clamped = clampPercentToFootprint(obj.posX, obj.posY, footprint, canvasRect.width, canvasRect.height);
-        return { ...obj, scale, posX: clamped.posX, posY: clamped.posY };
+        return { ...obj, posX: clamped.posX, posY: clamped.posY };
       })
     );
   }
@@ -224,6 +233,12 @@ export default function MainPage() {
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <h1 className="font-title text-4xl text-[#ff6fa5] drop-shadow-sm">🩷 데스크로그 · 나만의 데스크</h1>
         <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/cafe"
+            className="flex items-center gap-1.5 rounded-2xl border-2 border-angel-pink-200 bg-white px-6 py-3 text-lg font-bold text-[#5b4a52] shadow-sm shadow-angel-pink-200/40 transition hover:scale-105 hover:bg-angel-pink-50"
+          >
+            🧋 카페
+          </Link>
           <Link
             href="/challenge"
             className="flex items-center gap-1.5 rounded-2xl border-2 border-mint-200 bg-white px-6 py-3 text-lg font-bold text-[#5b4a52] shadow-sm shadow-mint-200/40 transition hover:scale-105 hover:bg-mint-50"
@@ -344,7 +359,13 @@ export default function MainPage() {
             </div>
           </div>
 
-          <DndContext sensors={sensors} modifiers={[boundsClampModifier]} onDragEnd={handleDragEnd}>
+          {/* No live bounds-clamp modifier here on purpose — clamping the
+              transform every frame while dragging recomputed the allowed
+              range continuously and snapped the object inward mid-gesture
+              (the "튕겨" bounce). Letting the drag track the cursor 1:1, with
+              handleDragEnd doing the one-time clamp/snap-to-edge on drop, is
+              what makes oversized objects move smoothly. */}
+          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
             {editMode && <ObjectInventory />}
 
             <div className={editMode ? "mt-6" : ""}>
@@ -356,6 +377,7 @@ export default function MainPage() {
                   onToggleAudio={handleToggleAudio}
                   onVolumeChange={handleVolumeChange}
                   onScaleChange={handleScaleChange}
+                  onResizeEnd={handleResizeEnd}
                   onImageChange={handleImageChange}
                   onVariantChange={handleVariantChange}
                   onDelete={handleDeleteObject}

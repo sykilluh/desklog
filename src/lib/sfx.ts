@@ -3,12 +3,19 @@
 /**
  * Tiny procedural sound-effect generator using the Web Audio API. No audio
  * files needed — each effect is synthesized on the fly (noise bursts run
- * through filters/envelopes, plus a few oscillator pings), so the drink
- * crafting flow has matching sounds for ice/pour/grind/cream without
- * shipping or hosting any audio assets.
+ * through filters/envelopes), so the drink crafting flow has matching
+ * tap-by-tap sounds without shipping or hosting any audio assets.
+ *
+ * Everything routes through a shared master bus (a gentle lowpass to take
+ * the digital edge off, plus a small reverb send) instead of straight to
+ * destination — dry, instant-onset noise bursts read as cheap/harsh; a touch
+ * of room tone and softened attacks make the same synthesis read as a real
+ * recorded foley sound instead.
  */
 
 let ctx: AudioContext | null = null;
+let masterBus: GainNode | null = null;
+let reverbSend: GainNode | null = null;
 
 function getCtx(): AudioContext | null {
   if (typeof window === "undefined") return null;
@@ -21,6 +28,59 @@ function getCtx(): AudioContext | null {
   return ctx;
 }
 
+/** Shared dry-signal destination: a soft lowpass that rounds off harsh top end. */
+function getMasterBus(c: AudioContext): GainNode {
+  if (masterBus) return masterBus;
+  const warmth = c.createBiquadFilter();
+  warmth.type = "lowpass";
+  warmth.frequency.value = 9000;
+  warmth.Q.value = 0.3;
+  warmth.connect(c.destination);
+  masterBus = c.createGain();
+  masterBus.gain.value = 1;
+  masterBus.connect(warmth);
+  return masterBus;
+}
+
+/**
+ * Shared "send" bus: a short feedback-delay tail (a cheap stand-in for a
+ * convolution reverb) that gives every dry hit a faint sense of a real room
+ * instead of sounding like it's playing in a vacuum — the single biggest
+ * thing separating "procedural beep" from "foley sound".
+ */
+function getReverbSend(c: AudioContext): GainNode {
+  if (reverbSend) return reverbSend;
+  const input = c.createGain();
+  input.gain.value = 1;
+  const delay = c.createDelay(1);
+  delay.delayTime.value = 0.04;
+  const feedback = c.createGain();
+  feedback.gain.value = 0.32;
+  const damp = c.createBiquadFilter();
+  damp.type = "lowpass";
+  damp.frequency.value = 2200;
+  const wet = c.createGain();
+  wet.gain.value = 0.55;
+
+  input.connect(delay);
+  delay.connect(damp);
+  damp.connect(feedback);
+  feedback.connect(delay);
+  damp.connect(wet);
+  wet.connect(c.destination);
+  reverbSend = input;
+  return input;
+}
+
+/** Connects a node to both the dry master bus and a touch of the reverb send. */
+function connectOut(c: AudioContext, node: AudioNode, wetAmount = 0.16) {
+  node.connect(getMasterBus(c));
+  const send = c.createGain();
+  send.gain.value = wetAmount;
+  node.connect(send);
+  send.connect(getReverbSend(c));
+}
+
 function noiseBuffer(c: AudioContext, durationSec: number) {
   const buffer = c.createBuffer(1, Math.ceil(c.sampleRate * durationSec), c.sampleRate);
   const data = buffer.getChannelData(0);
@@ -28,242 +88,276 @@ function noiseBuffer(c: AudioContext, durationSec: number) {
   return buffer;
 }
 
+/** Gain envelope with a brief linear ramp-in instead of an instant jump to
+ * peak — the instant jump is what makes a noise burst read as a harsh
+ * digital "click" rather than a soft physical knock. */
+function softHit(c: AudioContext, gain: GainNode, t: number, peak: number, attack: number, release: number) {
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(peak, t + attack);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + attack + release);
+}
+
 function playPing(c: AudioContext, freq: number, startTime: number, duration: number, gainPeak: number) {
   const osc = c.createOscillator();
   osc.type = "sine";
-  osc.frequency.value = freq;
   const gain = c.createGain();
-  gain.gain.setValueAtTime(0, startTime);
-  gain.gain.linearRampToValueAtTime(gainPeak, startTime + 0.008);
-  gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-  osc.connect(gain).connect(c.destination);
+  osc.frequency.value = freq;
+  softHit(c, gain, startTime, gainPeak, 0.01, duration);
+  osc.connect(gain);
+  connectOut(c, gain, 0.2);
   osc.start(startTime);
   osc.stop(startTime + duration + 0.02);
 }
 
 /**
- * One ice-cube "clink": almost entirely a very short, very bright noise
- * transient (the impact against glass/other cubes) with just a hint of
- * glassy ring riding on top — a clean oscillator ping by itself reads as a
- * UI bell, not ice. The transient needs to dominate and sit high (4-6kHz)
- * to read as "달그락" rattling rather than a chime.
+ * One ice-cube "clink": a soft, brief noise transient (the impact against
+ * glass/other cubes) with a hint of glassy ring riding on top.
  */
 function playClink(c: AudioContext, freq: number, startTime: number, gainPeak: number) {
-  // the knock: a very short, sharp high-passed noise crack
   const click = c.createBufferSource();
-  click.buffer = noiseBuffer(c, 0.025);
+  click.buffer = noiseBuffer(c, 0.03);
   const clickFilter = c.createBiquadFilter();
   clickFilter.type = "highpass";
-  clickFilter.frequency.value = 3200;
+  clickFilter.frequency.value = 3000;
   const clickGain = c.createGain();
-  clickGain.gain.setValueAtTime(gainPeak * 1.4, startTime);
-  clickGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.02);
-  click.connect(clickFilter).connect(clickGain).connect(c.destination);
+  softHit(c, clickGain, startTime, gainPeak * 1.1, 0.003, 0.035);
+  click.connect(clickFilter).connect(clickGain);
+  connectOut(c, clickGain, 0.22);
   click.start(startTime);
-  click.stop(startTime + 0.03);
+  click.stop(startTime + 0.04);
 
-  // a faint, very fast-decaying glassy overtone — just a hint, not a bell
   const osc = c.createOscillator();
   osc.type = "sine";
   osc.frequency.value = freq;
   const gain = c.createGain();
-  gain.gain.setValueAtTime(gainPeak * 0.35, startTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.045);
-  osc.connect(gain).connect(c.destination);
+  softHit(c, gain, startTime, gainPeak * 0.3, 0.004, 0.06);
+  osc.connect(gain);
+  connectOut(c, gain, 0.18);
   osc.start(startTime);
-  osc.stop(startTime + 0.05);
+  osc.stop(startTime + 0.07);
 
-  // ice cubes usually bounce twice in quick succession on impact
   if (Math.random() > 0.4) {
-    const t2 = startTime + 0.02 + Math.random() * 0.015;
+    const t2 = startTime + 0.025 + Math.random() * 0.015;
     const click2 = c.createBufferSource();
-    click2.buffer = noiseBuffer(c, 0.015);
+    click2.buffer = noiseBuffer(c, 0.018);
     const filter2 = c.createBiquadFilter();
     filter2.type = "highpass";
-    filter2.frequency.value = 3800;
+    filter2.frequency.value = 3600;
     const gain2 = c.createGain();
-    gain2.gain.setValueAtTime(gainPeak * 0.7, t2);
-    gain2.gain.exponentialRampToValueAtTime(0.001, t2 + 0.015);
-    click2.connect(filter2).connect(gain2).connect(c.destination);
+    softHit(c, gain2, t2, gainPeak * 0.55, 0.002, 0.02);
+    click2.connect(filter2).connect(gain2);
+    connectOut(c, gain2, 0.2);
     click2.start(t2);
-    click2.stop(t2 + 0.02);
-  }
-}
-
-/** A little rattling cluster of ice-cube clinks dropping into a glass and settling. */
-export function playIceSound() {
-  const c = getCtx();
-  if (!c) return;
-  const now = c.currentTime;
-  const pitches = [4200, 5100, 3800, 4700, 5600];
-  const count = 4 + Math.floor(Math.random() * 3);
-  let t = now;
-  for (let i = 0; i < count; i++) {
-    t += 0.05 + Math.random() * 0.08;
-    const settle = i / count; // later clinks are softer/closer together, like cubes settling
-    playClink(c, pitches[i % pitches.length] * (0.92 + Math.random() * 0.16), t, 0.2 * (1 - settle * 0.4));
+    click2.stop(t2 + 0.03);
   }
 }
 
 /**
- * Liquid pouring into a glass: a steady filtered noise "stream" with a
- * slow, slightly irregular amplitude wobble layered on top so it reads as
- * trickling/glugging rather than flat hiss, plus a couple of soft low
- * "glug" thumps near the start.
+ * One turn of a hand-crank grinder: a soft mechanical knock of the crank
+ * arm catching the ratchet, immediately followed by a tiny burst of bean
+ * crunch. Called once per crank — repeated taps build up a rattly texture
+ * driven by the player's own clicks.
  */
-export function playPourSound() {
+export function playGrindCrankTick(turn: number) {
   const c = getCtx();
   if (!c) return;
   const now = c.currentTime;
-  const duration = 0.85;
+
+  const clack = c.createBufferSource();
+  clack.buffer = noiseBuffer(c, 0.04);
+  const clackFilter = c.createBiquadFilter();
+  clackFilter.type = "bandpass";
+  clackFilter.frequency.value = 650;
+  clackFilter.Q.value = 1.2;
+  const clackGain = c.createGain();
+  softHit(c, clackGain, now, 0.14, 0.004, 0.06);
+  clack.connect(clackFilter).connect(clackGain);
+  connectOut(c, clackGain, 0.2);
+  clack.start(now);
+  clack.stop(now + 0.08);
+
+  const t = now + 0.035;
+  const burst = c.createBufferSource();
+  burst.buffer = noiseBuffer(c, 0.08);
+  const burstFilter = c.createBiquadFilter();
+  burstFilter.type = "bandpass";
+  burstFilter.frequency.value = 800 + turn * 55 + Math.random() * 180;
+  burstFilter.Q.value = 1.8;
+  const burstGain = c.createGain();
+  softHit(c, burstGain, t, 0.14, 0.004, 0.09);
+  burst.connect(burstFilter).connect(burstGain);
+  connectOut(c, burstGain, 0.2);
+  burst.start(t);
+  burst.stop(t + 0.1);
+}
+
+/** A single ice cube dropping in — a proper rattly "달그락" of 2-3 clinks
+ * (always at least two; one cube alone almost always knocks against another
+ * or the glass wall on the way in), louder and more present than a single
+ * faint tap. */
+export function playIceDropTick() {
+  const c = getCtx();
+  if (!c) return;
+  const now = c.currentTime;
+  const pitches = [3600, 4300, 3200, 3900, 4700, 5200];
+  const count = 2 + (Math.random() > 0.5 ? 1 : 0);
+  let t = now;
+  for (let i = 0; i < count; i++) {
+    playClink(c, pitches[Math.floor(Math.random() * pitches.length)], t, 0.32 * (1 - i * 0.18));
+    t += 0.035 + Math.random() * 0.03;
+  }
+}
+
+/**
+ * A real little pour: an audible rushing stream (filtered noise with a
+ * wobbling amplitude so it reads as glugging liquid, not a flat hiss) plus
+ * a couple of low "glug" thumps — long and loud enough to clearly register
+ * as "음료가 쪼르르 부어지는 소리", not just a faint blip.
+ */
+export function playPourGlugTick() {
+  const c = getCtx();
+  if (!c) return;
+  const now = c.currentTime;
+  const duration = 0.48;
 
   const source = c.createBufferSource();
   source.buffer = noiseBuffer(c, duration);
   const filter = c.createBiquadFilter();
   filter.type = "bandpass";
-  filter.frequency.setValueAtTime(900, now);
-  filter.frequency.linearRampToValueAtTime(550, now + duration);
-  filter.Q.value = 0.7;
+  filter.frequency.setValueAtTime(820, now);
+  filter.frequency.linearRampToValueAtTime(560, now + duration);
+  filter.Q.value = 0.8;
 
-  // slow wobble so the stream isn't perfectly flat
+  // amplitude wobble so the stream glugs instead of hissing flatly
   const wobble = c.createOscillator();
-  wobble.frequency.value = 7;
+  wobble.frequency.value = 9;
   const wobbleGain = c.createGain();
-  wobbleGain.gain.value = 0.4;
+  wobbleGain.gain.value = 0.5;
   const wobbleTarget = c.createGain();
   wobbleTarget.gain.value = 1;
   wobble.connect(wobbleGain).connect(wobbleTarget.gain);
 
   const envelope = c.createGain();
   envelope.gain.setValueAtTime(0, now);
-  envelope.gain.linearRampToValueAtTime(0.16, now + 0.1);
-  envelope.gain.setValueAtTime(0.16, now + duration - 0.2);
+  envelope.gain.linearRampToValueAtTime(0.32, now + 0.05);
+  envelope.gain.setValueAtTime(0.32, now + duration - 0.16);
   envelope.gain.linearRampToValueAtTime(0, now + duration);
 
-  source.connect(filter).connect(wobbleTarget).connect(envelope).connect(c.destination);
+  source.connect(filter).connect(wobbleTarget).connect(envelope);
+  connectOut(c, envelope, 0.22);
   source.start(now);
   wobble.start(now);
   source.stop(now + duration);
   wobble.stop(now + duration);
 
-  // a couple of soft low glug thumps as the pour starts
-  [0.04, 0.22].forEach((delay) => {
+  [0.02, 0.18].forEach((delay) => {
     const t = now + delay;
     const thump = c.createOscillator();
     thump.type = "sine";
-    thump.frequency.setValueAtTime(180, t);
-    thump.frequency.exponentialRampToValueAtTime(90, t + 0.12);
+    thump.frequency.setValueAtTime(170, t);
+    thump.frequency.exponentialRampToValueAtTime(85, t + 0.13);
     const thumpGain = c.createGain();
-    thumpGain.gain.setValueAtTime(0.1, t);
-    thumpGain.gain.exponentialRampToValueAtTime(0.001, t + 0.13);
-    thump.connect(thumpGain).connect(c.destination);
+    softHit(c, thumpGain, t, 0.16, 0.006, 0.13);
+    thump.connect(thumpGain);
+    connectOut(c, thumpGain, 0.18);
     thump.start(t);
-    thump.stop(t + 0.14);
+    thump.stop(t + 0.16);
   });
 }
 
 /**
- * Coffee grinder: a steady motor whir (low sawtooth, slightly detuned for
- * grit) underneath a rapid rattle of tiny crunchy bursts — the actual bean
- * fragments being chewed up. A single AM-modulated noise band alone reads
- * as a vacuum cleaner, not a grinder; the layered crunch clicks are what
- * sell it.
+ * Whipped cream: a long, breathy "푸우우욱" swell that blooms in and trails
+ * off, with a slow wobbling modulation on top so it sounds squishy/molten
+ * ("몽글몽글") rather than a thin aerosol hiss — plus the little mechanical
+ * trigger click right at the start of a can being pressed.
  */
-export function playGrindSound() {
+export function playCreamPuffTick() {
   const c = getCtx();
   if (!c) return;
   const now = c.currentTime;
-  const duration = 1.1;
+  const duration = 0.65;
 
-  // motor whir: two slightly mistuned sawtooths for a buzzy mechanical edge
-  const motorGain = c.createGain();
-  motorGain.gain.setValueAtTime(0, now);
-  motorGain.gain.linearRampToValueAtTime(0.07, now + 0.1);
-  motorGain.gain.setValueAtTime(0.07, now + duration - 0.15);
-  motorGain.gain.linearRampToValueAtTime(0, now + duration);
-  const motorFilter = c.createBiquadFilter();
-  motorFilter.type = "lowpass";
-  motorFilter.frequency.value = 500;
-  motorFilter.connect(motorGain).connect(c.destination);
-  [150, 156].forEach((freq) => {
-    const osc = c.createOscillator();
-    osc.type = "sawtooth";
-    osc.frequency.value = freq;
-    osc.connect(motorFilter);
-    osc.start(now);
-    osc.stop(now + duration);
-  });
-
-  // bean crunch: a rapid, irregular rattle of short noise bursts
-  let t = now + 0.05;
-  while (t < now + duration - 0.05) {
-    const burst = c.createBufferSource();
-    burst.buffer = noiseBuffer(c, 0.04);
-    const burstFilter = c.createBiquadFilter();
-    burstFilter.type = "bandpass";
-    burstFilter.frequency.value = 900 + Math.random() * 900;
-    burstFilter.Q.value = 2;
-    const burstGain = c.createGain();
-    burstGain.gain.setValueAtTime(0.12 + Math.random() * 0.06, t);
-    burstGain.gain.exponentialRampToValueAtTime(0.001, t + 0.035);
-    burst.connect(burstFilter).connect(burstGain).connect(c.destination);
-    burst.start(t);
-    burst.stop(t + 0.04);
-    t += 0.025 + Math.random() * 0.035;
-  }
-}
-
-/**
- * Whipped cream dispenser: a held aerosol hiss that swells in then trails
- * off, with a tiny mechanical "trigger click" right at the start — a short
- * blip alone sounds like a UI sound effect, not a can being pressed.
- */
-export function playCreamSound() {
-  const c = getCtx();
-  if (!c) return;
-  const now = c.currentTime;
-  const duration = 0.7;
-
-  // trigger click
   const click = c.createBufferSource();
   click.buffer = noiseBuffer(c, 0.02);
   const clickFilter = c.createBiquadFilter();
   clickFilter.type = "bandpass";
-  clickFilter.frequency.value = 1800;
+  clickFilter.frequency.value = 1600;
   const clickGain = c.createGain();
-  clickGain.gain.setValueAtTime(0.08, now);
-  clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
-  click.connect(clickFilter).connect(clickGain).connect(c.destination);
+  softHit(c, clickGain, now, 0.07, 0.004, 0.025);
+  click.connect(clickFilter).connect(clickGain);
+  connectOut(c, clickGain, 0.16);
   click.start(now);
-  click.stop(now + 0.025);
+  click.stop(now + 0.03);
 
-  // aerosol hiss
-  const source = c.createBufferSource();
-  source.buffer = noiseBuffer(c, duration);
-  const filter = c.createBiquadFilter();
-  filter.type = "bandpass";
-  filter.frequency.value = 4200;
-  filter.Q.value = 0.6;
+  const hiss = c.createBufferSource();
+  hiss.buffer = noiseBuffer(c, duration);
+  const hissFilter = c.createBiquadFilter();
+  hissFilter.type = "lowpass";
+  hissFilter.frequency.setValueAtTime(2200, now + 0.02);
+  hissFilter.frequency.linearRampToValueAtTime(1400, now + duration);
 
-  const flutter = c.createOscillator();
-  flutter.frequency.value = 14;
-  const flutterGain = c.createGain();
-  flutterGain.gain.value = 0.2;
-  const flutterTarget = c.createGain();
-  flutterTarget.gain.value = 1;
-  flutter.connect(flutterGain).connect(flutterTarget.gain);
+  // slow squishy wobble — gives the "몽글몽글" bubbling texture instead of a
+  // flat steady hiss
+  const wobble = c.createOscillator();
+  wobble.frequency.value = 7;
+  const wobbleGain = c.createGain();
+  wobbleGain.gain.value = 0.45;
+  const wobbleTarget = c.createGain();
+  wobbleTarget.gain.value = 1;
+  wobble.connect(wobbleGain).connect(wobbleTarget.gain);
 
-  const envelope = c.createGain();
-  envelope.gain.setValueAtTime(0, now + 0.02);
-  envelope.gain.linearRampToValueAtTime(0.13, now + 0.12);
-  envelope.gain.setValueAtTime(0.13, now + duration - 0.25);
-  envelope.gain.linearRampToValueAtTime(0, now + duration);
+  const hissGain = c.createGain();
+  hissGain.gain.setValueAtTime(0, now + 0.02);
+  hissGain.gain.linearRampToValueAtTime(0.22, now + 0.22);
+  hissGain.gain.setValueAtTime(0.22, now + duration - 0.3);
+  hissGain.gain.linearRampToValueAtTime(0, now + duration);
 
-  source.connect(filter).connect(flutterTarget).connect(envelope).connect(c.destination);
-  source.start(now);
-  flutter.start(now);
-  source.stop(now + duration);
-  flutter.stop(now + duration);
+  hiss.connect(hissFilter).connect(wobbleTarget).connect(hissGain);
+  connectOut(c, hissGain, 0.22);
+  hiss.start(now + 0.02);
+  wobble.start(now + 0.02);
+  hiss.stop(now + duration);
+  wobble.stop(now + duration);
+}
+
+/** One soft dunk of a tea bag, for tap-by-tap steeping. */
+export function playSteepDunkTick() {
+  const c = getCtx();
+  if (!c) return;
+  const now = c.currentTime;
+  const dunk = c.createBufferSource();
+  dunk.buffer = noiseBuffer(c, 0.14);
+  const dunkFilter = c.createBiquadFilter();
+  dunkFilter.type = "lowpass";
+  dunkFilter.frequency.value = 550;
+  const dunkGain = c.createGain();
+  softHit(c, dunkGain, now, 0.13, 0.01, 0.19);
+  dunk.connect(dunkFilter).connect(dunkGain);
+  connectOut(c, dunkGain, 0.24);
+  dunk.start(now);
+  dunk.stop(now + 0.22);
+}
+
+/** A couple of quick whisk taps, for tap-by-tap whisking. */
+export function playWhiskStrokeTick() {
+  const c = getCtx();
+  if (!c) return;
+  const now = c.currentTime;
+  [0, 0.07].forEach((delay, i) => {
+    const t = now + delay;
+    const tap = c.createBufferSource();
+    tap.buffer = noiseBuffer(c, 0.03);
+    const tapFilter = c.createBiquadFilter();
+    tapFilter.type = "bandpass";
+    tapFilter.frequency.value = i % 2 === 0 ? 1200 : 950;
+    tapFilter.Q.value = 2.2;
+    const tapGain = c.createGain();
+    softHit(c, tapGain, t, 0.08, 0.004, 0.035);
+    tap.connect(tapFilter).connect(tapGain);
+    connectOut(c, tapGain, 0.18);
+    tap.start(t);
+    tap.stop(t + 0.04);
+  });
 }
 
 /** A short cheerful chime — the drink is finished. */
@@ -271,5 +365,5 @@ export function playCompleteSound() {
   const c = getCtx();
   if (!c) return;
   const now = c.currentTime;
-  [660, 880, 1320].forEach((freq, i) => playPing(c, freq, now + i * 0.09, 0.4, 0.1));
+  [660, 880, 1320].forEach((freq, i) => playPing(c, freq, now + i * 0.09, 0.4, 0.09));
 }
