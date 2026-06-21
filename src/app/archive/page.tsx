@@ -1,12 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { domToPng } from "modern-screenshot";
 import ShareCardTemplate from "@/components/share/ShareCardTemplate";
 import CardCustomizer from "@/components/share/CardCustomizer";
 import { usePlaylist } from "@/components/providers/PlaylistProvider";
+import { useFocusSessions } from "@/hooks/useFocusSessions";
 import type { ShareCardConfig } from "@/types/shareCard";
 import type { ChallengeDTO } from "@/types/challenge";
+
+function formatDuration(totalSeconds: number) {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  if (h > 0) return `${h}시간 ${m}분`;
+  return `${m}분`;
+}
 
 interface FocusStatistics {
   totalSeconds: number;
@@ -17,14 +26,25 @@ interface FocusStatistics {
 export default function ArchivePage() {
   const cardRef = useRef<HTMLDivElement>(null);
   const playlist = usePlaylist();
+  const { sessions } = useFocusSessions();
   const [stats, setStats] = useState<FocusStatistics | null>(null);
   const [challenges, setChallenges] = useState<ChallengeDTO[]>([]);
   const [title, setTitle] = useState("나의 독서 기록");
+  const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
   const [config, setConfig] = useState<ShareCardConfig>({
     backgroundId: "angel-pink",
     fontId: "cute",
     sticker: "🩷",
   });
+
+  const selectedSession = sessions.find((s) => s.id === selectedSessionId) ?? null;
+  const cardSeconds = selectedSession ? selectedSession.totalSeconds : stats?.totalSeconds ?? 0;
+
+  function handleSelectSession(id: number | null) {
+    setSelectedSessionId(id);
+    const found = sessions.find((s) => s.id === id);
+    if (found) setTitle(found.name);
+  }
 
   useEffect(() => {
     fetch("/api/focus-logs/statistics")
@@ -88,22 +108,49 @@ export default function ArchivePage() {
 
   return (
     <main className="min-h-screen p-6 text-[#5b4a52] sm:p-8">
-      <a href="/" className="mb-4 inline-block text-sm text-[#a8889a]">
+      <Link href="/" className="mb-4 inline-block text-sm text-[#a8889a]">
         ← 데스크로 돌아가기
-      </a>
-      <h1 className="mb-6 text-3xl text-[#ff6fa5]">🎀 SNS 공유 카드</h1>
+      </Link>
+      <h1 className="font-title mb-6 text-3xl text-[#ff6fa5]">🎀 SNS 공유 카드</h1>
 
       <div className="flex flex-col items-start gap-6 lg:flex-row">
         <ShareCardTemplate
           ref={cardRef}
           config={config}
           title={title}
-          totalSeconds={stats?.totalSeconds ?? 0}
+          totalSeconds={cardSeconds}
           nowPlaying={nowPlaying}
           completedDate={completed ? completed.endDate.slice(0, 10) : null}
         />
 
         <div className="w-full max-w-sm space-y-4">
+          {sessions.length > 0 && (
+            <div className="rounded-3xl border-2 border-white/70 bg-white/80 p-4 shadow-md backdrop-blur">
+              <p className="mb-2 text-sm text-[#a8889a]">저장해둔 기록으로 카드 만들기</p>
+              <div className="flex flex-col gap-1.5">
+                <button
+                  onClick={() => handleSelectSession(null)}
+                  className={`rounded-xl px-3 py-1.5 text-left text-xs font-bold transition ${
+                    selectedSessionId === null ? "bg-angel-pink-100" : "hover:bg-angel-pink-50"
+                  }`}
+                >
+                  전체 누적 기록 ({((stats?.totalSeconds ?? 0) / 3600).toFixed(1)}시간)
+                </button>
+                {sessions.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => handleSelectSession(s.id)}
+                    className={`rounded-xl px-3 py-1.5 text-left text-xs font-bold transition ${
+                      selectedSessionId === s.id ? "bg-angel-pink-100" : "hover:bg-angel-pink-50"
+                    }`}
+                  >
+                    📌 {s.name} ({formatDuration(s.totalSeconds)}){s.isCompleted ? " ✅" : ""}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="rounded-3xl border-2 border-white/70 bg-white/80 p-4 shadow-md backdrop-blur">
             <p className="mb-2 text-sm text-[#a8889a]">카드 제목 수정</p>
             <input

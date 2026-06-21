@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 
 const GROWTH_STAGES = [
   { emoji: "🌱", label: "새싹" },
@@ -63,10 +64,10 @@ export default function PlantPage() {
 
   return (
     <main className="min-h-screen p-6 text-[#5b4a52] sm:p-8">
-      <a href="/" className="mb-4 inline-block text-sm text-[#a8889a]">
+      <Link href="/" className="mb-4 inline-block text-sm text-[#a8889a]">
         ← 데스크로 돌아가기
-      </a>
-      <h1 className="mb-6 text-3xl text-[#3a6e58]">🌱 내 식물 키우기</h1>
+      </Link>
+      <h1 className="font-title mb-6 text-3xl text-[#3a6e58]">🌱 내 식물 키우기</h1>
 
       <div className="mx-auto max-w-md space-y-6">
         <div className="rounded-3xl border-2 border-white/70 bg-white/80 p-8 text-center shadow-md backdrop-blur">

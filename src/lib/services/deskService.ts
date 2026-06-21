@@ -35,16 +35,34 @@ export async function saveDeskObjects(userId: number, objects: DeskObjectInput[]
         isActive: obj.isActive ?? true,
         volume: obj.volume ?? 0.5,
         scale: obj.scale ?? 1,
+        imageData: obj.imageData ?? null,
+        variant: obj.variant ?? null,
       })),
     });
     return tx.deskObject.findMany({ where: { userId }, orderBy: { id: "asc" } });
   });
 }
 
+export async function getDeskSetting(userId: number) {
+  const setting = await prisma.deskSetting.findUnique({ where: { userId } });
+  return setting ?? { id: 0, userId, backgroundId: "default", backgroundImage: null, updatedAt: new Date() };
+}
+
+export async function saveDeskSetting(userId: number, backgroundId: string, backgroundImage?: string | null) {
+  if (typeof backgroundId !== "string" || !backgroundId) {
+    throw new ServiceError("배경 값이 누락되었습니다.", 400);
+  }
+  return prisma.deskSetting.upsert({
+    where: { userId },
+    update: { backgroundId, backgroundImage: backgroundImage ?? null },
+    create: { userId, backgroundId, backgroundImage: backgroundImage ?? null },
+  });
+}
+
 export async function patchDeskObject(
   userId: number,
   id: number,
-  data: Partial<Pick<DeskObjectInput, "isActive" | "volume" | "posX" | "posY" | "scale">>
+  data: Partial<Pick<DeskObjectInput, "isActive" | "volume" | "posX" | "posY" | "scale" | "imageData" | "variant">>
 ) {
   const existing = await prisma.deskObject.findFirst({ where: { id, userId } });
   if (!existing) {

@@ -11,24 +11,48 @@ export default function DeskCanvas({
   onToggleAudio,
   onVolumeChange,
   onScaleChange,
+  onImageChange,
+  onVariantChange,
+  onDelete,
   isTurntableSpinning,
   turntableVideoId,
+  isStudying,
+  onTurntableSeek,
+  turntableSeekBoost,
+  editMode,
+  backgroundClassName,
+  backgroundImage,
 }: {
   objects: DeskObjectDTO[];
   onToggleAudio: (object: DeskObjectDTO) => void;
   onVolumeChange: (id: number, volume: number) => void;
   onScaleChange: (id: number, scale: number) => void;
+  onImageChange: (id: number, dataUrl: string) => void;
+  onVariantChange: (id: number, variant: string) => void;
+  onDelete: (id: number) => void;
   isTurntableSpinning: boolean;
   turntableVideoId: string | null;
+  isStudying?: boolean;
+  onTurntableSeek?: (ratio: number) => void;
+  turntableSeekBoost?: number;
+  editMode: boolean;
+  backgroundClassName?: string;
+  backgroundImage?: string | null;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: DESK_CANVAS_ID });
 
   return (
     <div
       ref={setNodeRef}
-      className={`relative mx-auto aspect-[12/7] w-full max-w-[1200px] rounded-[2rem] border-4 transition-colors ${
+      id={DESK_CANVAS_ID}
+      style={
+        backgroundImage
+          ? { backgroundImage: `url(${backgroundImage})`, backgroundSize: "cover", backgroundPosition: "center" }
+          : undefined
+      }
+      className={`relative mx-auto aspect-[12/7] w-full max-w-[1200px] overflow-hidden rounded-[2rem] border-4 transition-colors ${
         isOver ? "border-angel-pink-300" : "border-white/70"
-      } bg-gradient-to-br from-angel-pink-50 via-sky-blue-50 to-mint-50 shadow-xl`}
+      } ${!backgroundImage ? backgroundClassName ?? "bg-gradient-to-br from-angel-pink-50 via-sky-blue-50 to-mint-50" : ""} shadow-xl`}
     >
       {objects.map((object) => (
         <DeskObjectItem
@@ -37,8 +61,15 @@ export default function DeskCanvas({
           onToggleAudio={onToggleAudio}
           onVolumeChange={onVolumeChange}
           onScaleChange={onScaleChange}
+          onImageChange={onImageChange}
+          onVariantChange={onVariantChange}
+          onDelete={onDelete}
           isSpinning={object.objectName === "turntable" ? isTurntableSpinning : object.isActive}
           videoId={object.objectName === "turntable" ? turntableVideoId : null}
+          editMode={editMode}
+          isStudying={isStudying}
+          onTurntableSeek={onTurntableSeek}
+          turntableSeekBoost={turntableSeekBoost}
         />
       ))}
     </div>
