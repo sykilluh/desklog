@@ -129,17 +129,14 @@ export default function FloatingControlBar() {
             </button>
           ) : (
             <button
-              onClick={timer.start}
+              onClick={timer.activeSessionId ? timer.continueActiveSession : timer.startWithoutSession}
               className="rounded-full bg-gradient-to-r from-angel-pink-300 to-strawberry-milk-300 px-4 py-2 text-sm font-bold text-white shadow shadow-angel-pink-300/40"
             >
               ▶
             </button>
           )}
           <button
-            onClick={() => {
-              timer.stopAndLog();
-              timer.clearActiveSession();
-            }}
+            onClick={timer.stopAndSaveSession}
             className="rounded-full bg-mint-100 px-3 py-2 text-sm font-bold text-[#3a6e58]"
           >
             ✅

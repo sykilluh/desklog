@@ -31,7 +31,7 @@ export function useTodos() {
   }, []);
 
   const patchTodo = useCallback(
-    async (id: number, data: { title?: string; isDone?: boolean; addFocusSeconds?: number }) => {
+    async (id: number, data: { title?: string; isDone?: boolean }) => {
       const res = await fetch(`/api/todos/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },

@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   try {
     const userId = await getCurrentUserId();
     const body = await req.json();
-    const session = await createFocusSession(userId, body.name);
+    const session = await createFocusSession(userId, body.name, body.mode, body.preset);
     return sendOk(session, "새 기록 생성 완료");
   } catch (err) {
     if (err instanceof ServiceError) return sendError(err.message, err.status);

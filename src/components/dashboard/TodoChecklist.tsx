@@ -1,14 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useTodos } from "@/hooks/useTodos";
 import type { TodoDTO } from "@/types/todo";
-
-function formatMinutes(seconds: number) {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}분 ${s}초`;
-}
 
 function TodoRow({
   todo,
@@ -16,32 +10,9 @@ function TodoRow({
   onRemove,
 }: {
   todo: TodoDTO;
-  onPatch: (id: number, data: { title?: string; isDone?: boolean; addFocusSeconds?: number }) => void;
+  onPatch: (id: number, data: { title?: string; isDone?: boolean }) => void;
   onRemove: (id: number) => void;
 }) {
-  const [isRunning, setIsRunning] = useState(false);
-  const [elapsed, setElapsed] = useState(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    if (isRunning) {
-      intervalRef.current = setInterval(() => setElapsed((prev) => prev + 1), 1000);
-    } else if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [isRunning]);
-
-  function handleToggleTimer() {
-    if (isRunning) {
-      onPatch(todo.id, { addFocusSeconds: elapsed });
-      setElapsed(0);
-    }
-    setIsRunning((prev) => !prev);
-  }
-
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-white/70 bg-white/80 p-3 shadow-sm">
       <input
@@ -53,17 +24,6 @@ function TodoRow({
       <span className={`flex-1 text-sm ${todo.isDone ? "text-[#cdb8c4] line-through" : "text-[#5b4a52]"}`}>
         {todo.title}
       </span>
-      <span className="text-xs text-[#a8889a]">
-        {formatMinutes(todo.focusSeconds + (isRunning ? elapsed : 0))}
-      </span>
-      <button
-        onClick={handleToggleTimer}
-        className={`rounded-full px-3 py-1 text-xs font-bold ${
-          isRunning ? "bg-strawberry-milk-200 text-[#a8533f]" : "bg-mint-100 text-[#3a6e58]"
-        }`}
-      >
-        {isRunning ? "⏸ 정지" : "▶ 측정"}
-      </button>
       <button onClick={() => onRemove(todo.id)} className="text-xs text-[#cdb8c4]">
         🗑️
       </button>

@@ -62,6 +62,10 @@ export function useFocusTimer(onFocusComplete: (focusSeconds: number) => void) {
   // so focusElapsedRef wouldn't be caught up yet when stopAndLog reads it
   // right after.
   const secondsRef = useRef(seconds);
+  // Mirrors `phase` for the same reason as secondsRef — stopAndLog needs the
+  // phase as of the just-ran catch-up tick, synchronously, to snapshot it
+  // for resuming later (setPhase's update wouldn't be visible yet).
+  const phaseRef = useRef(phase);
 
   // Restore persisted state after mount only (not during render), so the client's
   // first render matches the server-rendered HTML and avoids a hydration mismatch.
@@ -78,6 +82,7 @@ export function useFocusTimer(onFocusComplete: (focusSeconds: number) => void) {
     if (initial) {
       setMode(initial.mode);
       setPhase(initial.phase);
+      phaseRef.current = initial.phase;
       setPreset(initial.preset);
       setIsRunning(false);
       // A pomodoro countdown should never be sitting at 0 while paused — the
@@ -122,7 +127,7 @@ export function useFocusTimer(onFocusComplete: (focusSeconds: number) => void) {
       // focusElapsedRef immediately after calling this, without waiting for
       // React to process a deferred state update first.
       let nextSeconds = secondsRef.current;
-      let nextPhase = phase;
+      let nextPhase = phaseRef.current;
 
       if (mode === "stopwatch") {
         focusElapsedRef.current += elapsedSeconds;
@@ -160,7 +165,10 @@ export function useFocusTimer(onFocusComplete: (focusSeconds: number) => void) {
 
       secondsRef.current = nextSeconds;
       setSeconds(nextSeconds);
-      if (nextPhase !== phase) setPhase(nextPhase);
+      if (nextPhase !== phaseRef.current) {
+        phaseRef.current = nextPhase;
+        setPhase(nextPhase);
+      }
       savePersistedState({
         mode,
         phase: nextPhase,
@@ -215,6 +223,7 @@ export function useFocusTimer(onFocusComplete: (focusSeconds: number) => void) {
       if (isRunning) return;
       setMode(nextMode);
       setPhase("focus");
+      phaseRef.current = "focus";
       focusElapsedRef.current = 0;
       const next = nextMode === "pomodoro" ? preset.focusMinutes * 60 : 0;
       secondsRef.current = next;
@@ -228,6 +237,7 @@ export function useFocusTimer(onFocusComplete: (focusSeconds: number) => void) {
       if (isRunning) return;
       setPreset(nextPreset);
       setPhase("focus");
+      phaseRef.current = "focus";
       focusElapsedRef.current = 0;
       secondsRef.current = nextPreset.focusMinutes * 60;
       setSeconds(nextPreset.focusMinutes * 60);
@@ -256,6 +266,7 @@ export function useFocusTimer(onFocusComplete: (focusSeconds: number) => void) {
   const reset = useCallback(() => {
     setIsRunning(false);
     setPhase("focus");
+    phaseRef.current = "focus";
     focusElapsedRef.current = 0;
     const next = mode === "pomodoro" ? preset.focusMinutes * 60 : 0;
     secondsRef.current = next;
@@ -272,11 +283,35 @@ export function useFocusTimer(onFocusComplete: (focusSeconds: number) => void) {
       onFocusComplete(focusElapsedRef.current);
     }
     focusElapsedRef.current = 0;
+    // Snapshot the position right before resetting it — this is what lets a
+    // caller persist "23 minutes remaining" or "1분 20초 elapsed" onto a
+    // named record so resuming it later restores exactly this spot instead
+    // of a fresh countdown/0:00.
+    const snapshot = { seconds: secondsRef.current, phase: phaseRef.current };
     setPhase("focus");
+    phaseRef.current = "focus";
     const next = mode === "pomodoro" ? preset.focusMinutes * 60 : 0;
     secondsRef.current = next;
     setSeconds(next);
+    return snapshot;
   }, [mode, preset, onFocusComplete, isRunning]);
+
+  // Restores a previously-saved position (from stopAndLog's snapshot) onto
+  // the live timer — used when resuming a record instead of starting it at
+  // a fresh full preset / 0:00.
+  const loadSavedProgress = useCallback(
+    (savedSeconds: number, savedPhase: TimerPhase, savedPreset: { focusMinutes: number; breakMinutes: number }) => {
+      setIsRunning(false);
+      setPreset(savedPreset);
+      setPhase(savedPhase);
+      phaseRef.current = savedPhase;
+      focusElapsedRef.current = 0;
+      const next = Math.max(0, Math.round(savedSeconds));
+      secondsRef.current = next;
+      setSeconds(next);
+    },
+    []
+  );
 
   return {
     mode,
@@ -286,6 +321,7 @@ export function useFocusTimer(onFocusComplete: (focusSeconds: number) => void) {
     seconds,
     switchMode,
     selectPreset,
+    loadSavedProgress,
     start,
     pause,
     reset,

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { POMODORO_PRESETS, useFocusTimer } from "@/hooks/useFocusTimer";
 import { useFocusSessions, type FocusSessionDTO } from "@/hooks/useFocusSessions";
 
@@ -16,14 +16,18 @@ interface FocusTimerContextValue extends ReturnType<typeof useFocusTimer> {
   startNewSession: (name: string) => Promise<void>;
   /** Resume a previously saved, unfinished record and start the timer against it. */
   resumeSession: (session: FocusSessionDTO) => void;
-  /** Start the timer with no named record attached (today's total still counts). */
+  /** Start the timer with no name typed in — still creates a record (auto-named "timeN"). */
   startWithoutSession: () => void;
+  /** Give the currently-active (auto-named or otherwise) record a real name without losing its accumulated time. */
+  nameActiveSession: (name: string) => Promise<void>;
   /** Resume the currently-active (paused) named session without detaching it. */
   continueActiveSession: () => void;
   /** Pause and bank whatever's accumulated so far onto the active named record. */
   pauseSession: () => void;
   /** Clears which record is "active" (e.g. after 종료·기록) without deleting it — it stays available to resume later. */
   clearActiveSession: () => void;
+  /** The "종료·저장" action — banks elapsed time, snapshots the exact timer position onto the record, and detaches it. */
+  stopAndSaveSession: () => Promise<void>;
   deleteSession: (id: number) => Promise<void>;
   renameSession: (id: number, name: string) => Promise<void>;
   setSessionCompleted: (id: number, isCompleted: boolean) => Promise<void>;
@@ -36,7 +40,6 @@ const FocusTimerContext = createContext<FocusTimerContextValue | null>(null);
 export default function FocusTimerProvider({ children }: { children: React.ReactNode }) {
   const [todayFocusSeconds, setTodayFocusSeconds] = useState(0);
   const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
-  const [activeSessionName, setActiveSessionName] = useState<string | null>(null);
   const [dailyFocusSeconds, setDailyFocusSeconds] = useState<Array<{ date: string; seconds: number }>>([]);
   // Single shared instance — FocusRecordsPanel used to call useFocusSessions()
   // again on its own, which meant it had its own copy of `sessions` that never
@@ -45,23 +48,29 @@ export default function FocusTimerProvider({ children }: { children: React.React
   // panel's own initial fetch (0 for a freshly created record) forever.
   const focusSessions = useFocusSessions();
 
+  // Derived, not separately tracked — renaming the active session from the
+  // diary list (FocusRecordsPanel) updates `sessions` directly; if the name
+  // were copied into its own state at start/resume time, that edit wouldn't
+  // show up here until the next start/resume.
+  const activeSessionName = useMemo(() => {
+    if (activeSessionId == null) return null;
+    return focusSessions.sessions.find((s) => s.id === activeSessionId)?.name ?? null;
+  }, [activeSessionId, focusSessions.sessions]);
+
   useEffect(() => {
     const raw = window.localStorage.getItem(ACTIVE_SESSION_KEY);
     if (raw) setActiveSessionId(Number(raw));
   }, []);
 
-  // Keep the displayed name in sync once the session list has loaded — and if
-  // the active id no longer exists there (e.g. deleted, or a stale id left
-  // over in localStorage from testing), drop it. Otherwise every pause/stop
-  // would keep silently PATCHing a session that's gone, which looks exactly
-  // like "saving does nothing".
+  // Drop the active id if it no longer exists in the loaded list (e.g.
+  // deleted, or a stale id left over in localStorage from testing).
+  // Otherwise every pause/stop would keep silently PATCHing a session that's
+  // gone, which looks exactly like "saving does nothing".
   useEffect(() => {
     if (activeSessionId == null || focusSessions.isLoading) return;
-    const found = focusSessions.sessions.find((s) => s.id === activeSessionId);
-    if (found) setActiveSessionName(found.name);
-    else {
+    const found = focusSessions.sessions.some((s) => s.id === activeSessionId);
+    if (!found) {
       setActiveSessionId(null);
-      setActiveSessionName(null);
       window.localStorage.removeItem(ACTIVE_SESSION_KEY);
     }
   }, [activeSessionId, focusSessions.sessions, focusSessions.isLoading]);
@@ -99,17 +108,16 @@ export default function FocusTimerProvider({ children }: { children: React.React
     refreshDailyFocus();
   }, [refreshTodayFocus, refreshDailyFocus]);
 
-  const setActiveSession = useCallback((id: number | null, name: string | null) => {
+  const setActiveSession = useCallback((id: number | null) => {
     setActiveSessionId(id);
-    setActiveSessionName(name);
     if (id == null) window.localStorage.removeItem(ACTIVE_SESSION_KEY);
     else window.localStorage.setItem(ACTIVE_SESSION_KEY, String(id));
   }, []);
 
   const startNewSession = useCallback(
     async (name: string) => {
-      const created = await focusSessions.createSession(name);
-      if (created) setActiveSession(created.id, created.name);
+      const created = await focusSessions.createSession(name, timer.mode, timer.preset);
+      if (created) setActiveSession(created.id);
       timer.start();
     },
     [focusSessions, setActiveSession, timer]
@@ -117,7 +125,25 @@ export default function FocusTimerProvider({ children }: { children: React.React
 
   const resumeSession = useCallback(
     (session: FocusSessionDTO) => {
-      setActiveSession(session.id, session.name);
+      // A session is locked to whichever mode it was created under — 뽀모도로
+      // and 타이머(스톱워치) count time in different units, so resuming must
+      // force the timer back into that mode rather than let it keep
+      // whatever mode happens to be selected right now.
+      //
+      // Restores the exact spot it was left at (remaining countdown for a
+      // pomodoro record, elapsed count for a stopwatch one) instead of
+      // starting over from a fresh preset / 0:00 — lastSeconds is 0 only for
+      // a record that's never been stopped·저장 yet, in which case there's
+      // nothing to restore and a plain mode/preset switch is enough.
+      if (session.mode !== timer.mode) timer.switchMode(session.mode);
+
+      const preset = { focusMinutes: session.presetFocusMinutes, breakMinutes: session.presetBreakMinutes };
+      if (session.lastSeconds > 0) {
+        timer.loadSavedProgress(session.lastSeconds, session.lastPhase, preset);
+      } else if (session.mode === "pomodoro" && preset.focusMinutes !== timer.preset.focusMinutes) {
+        timer.selectPreset(preset);
+      }
+      setActiveSession(session.id);
       timer.start();
     },
     [setActiveSession, timer]
@@ -131,10 +157,27 @@ export default function FocusTimerProvider({ children }: { children: React.React
     timer.start();
   }, [timer]);
 
-  const startWithoutSession = useCallback(() => {
-    setActiveSession(null, null);
+  // Starting with no name still creates a record (the server auto-names it
+  // "time1", "time2", ...) instead of leaving the run completely untracked —
+  // so it shows up in the diary and can be renamed later from there or from
+  // FocusTimer's inline name field while it's running.
+  const startWithoutSession = useCallback(async () => {
+    const created = await focusSessions.createSession("", timer.mode, timer.preset);
+    if (created) setActiveSession(created.id);
     timer.start();
-  }, [setActiveSession, timer]);
+  }, [focusSessions, setActiveSession, timer]);
+
+  // Lets a run that was started anonymously (no name typed before pressing
+  // 시작) get a real name once one occurs to you, without losing whatever
+  // time has already accumulated under the auto "timeN" name — renames the
+  // already-created session in place instead of starting a second one.
+  const nameActiveSession = useCallback(
+    async (name: string) => {
+      if (activeSessionId == null || !name.trim()) return;
+      await focusSessions.renameSession(activeSessionId, name.trim());
+    },
+    [activeSessionId, focusSessions]
+  );
 
   const pauseSession = useCallback(() => {
     timer.pause();
@@ -149,13 +192,32 @@ export default function FocusTimerProvider({ children }: { children: React.React
   }, [timer, logFocusSeconds]);
 
   const clearActiveSession = useCallback(() => {
-    setActiveSession(null, null);
+    setActiveSession(null);
   }, [setActiveSession]);
+
+  // The "종료·저장" action: banks the elapsed focus time as usual, but also
+  // snapshots exactly where the live timer was (remaining countdown for
+  // pomodoro, elapsed count for stopwatch) onto the active record so the
+  // next "이어하기" restores that same spot instead of a fresh start.
+  const stopAndSaveSession = useCallback(async () => {
+    const sessionId = activeSessionId;
+    const presetAtStop = timer.preset;
+    const { seconds: lastSeconds, phase: lastPhase } = timer.stopAndLog();
+    if (sessionId) {
+      await focusSessions.saveProgress(sessionId, {
+        lastSeconds,
+        lastPhase,
+        presetFocusMinutes: presetAtStop.focusMinutes,
+        presetBreakMinutes: presetAtStop.breakMinutes,
+      });
+    }
+    clearActiveSession();
+  }, [activeSessionId, timer, focusSessions, clearActiveSession]);
 
   const deleteSession = useCallback(
     async (id: number) => {
       await focusSessions.deleteSession(id);
-      if (activeSessionId === id) setActiveSession(null, null);
+      if (activeSessionId === id) setActiveSession(null);
     },
     [focusSessions, activeSessionId, setActiveSession]
   );
@@ -172,9 +234,11 @@ export default function FocusTimerProvider({ children }: { children: React.React
         startNewSession,
         resumeSession,
         startWithoutSession,
+        nameActiveSession,
         continueActiveSession,
         pauseSession,
         clearActiveSession,
+        stopAndSaveSession,
         deleteSession,
         renameSession: focusSessions.renameSession,
         setSessionCompleted: focusSessions.setCompleted,
