@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
@@ -28,7 +29,7 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center p-6 text-[#5b4a52]">
       <div className="w-full max-w-sm space-y-4 rounded-3xl border-2 border-white/70 bg-white/85 p-8 shadow-xl backdrop-blur">
-        <h1 className="text-center text-2xl text-[#ff6fa5]">🩷 데스크로그 로그인</h1>
+        <h1 className="font-title text-center text-2xl text-[#ff6fa5]">🩷 데스크로그 로그인</h1>
 
         <input
           value={email}
@@ -58,9 +59,9 @@ export default function LoginPage() {
 
         <p className="text-center text-xs text-[#a8889a]">
           계정이 없으신가요?{" "}
-          <a href="/signup" className="font-bold text-[#ff6fa5]">
+          <Link href="/signup" className="font-bold text-[#ff6fa5]">
             회원가입
-          </a>
+          </Link>
         </p>
       </div>
     </main>

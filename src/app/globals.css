@@ -23,6 +23,10 @@ h1 {
   font-weight: 800;
 }
 
+.font-title {
+  font-family: var(--font-title), var(--font-noto), sans-serif;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { POMODORO_PRESETS, useGlobalFocusTimer } from "@/components/providers/FocusTimerProvider";
 
 function formatTime(totalSeconds: number) {
@@ -8,6 +9,48 @@ function formatTime(totalSeconds: number) {
     .padStart(2, "0");
   const seconds = (totalSeconds % 60).toString().padStart(2, "0");
   return `${minutes}:${seconds}`;
+}
+
+function formatDuration(totalSeconds: number) {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  if (h > 0) return `${h}시간 ${m}분`;
+  return `${m}분`;
+}
+
+function PlayIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M3.5 2.2c0-.9 1-1.4 1.7-.9l8.6 5.8c.7.5.7 1.5 0 2l-8.6 5.8c-.7.5-1.7 0-1.7-.9V2.2z" />
+    </svg>
+  );
+}
+
+function PauseIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <rect x="3" y="2" width="4" height="12" rx="1.3" />
+      <rect x="9" y="2" width="4" height="12" rx="1.3" />
+    </svg>
+  );
+}
+
+function ResetIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M13 8A5 5 0 1 1 11.2 4.3" />
+      <path d="M13 2.5v3.2h-3.2" />
+    </svg>
+  );
+}
+
+function SaveCheckIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="1.5" y="1.5" width="13" height="13" rx="4" fill="currentColor" opacity="0.18" />
+      <path d="M4.2 8.3l2.4 2.4 5.2-5.4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    </svg>
+  );
 }
 
 export default function FocusTimer() {
@@ -19,18 +62,43 @@ export default function FocusTimer() {
     seconds,
     switchMode,
     selectPreset,
-    start,
-    pause,
     reset,
     stopAndLog,
+    sessions,
+    activeSessionId,
+    activeSessionName,
+    startNewSession,
+    resumeSession,
+    startWithoutSession,
+    continueActiveSession,
+    pauseSession,
+    clearActiveSession,
   } = useGlobalFocusTimer();
+
+  const [nameInput, setNameInput] = useState("");
+  const unfinished = sessions.filter((s) => !s.isCompleted);
+
+  function handleStart() {
+    if (activeSessionId) {
+      continueActiveSession();
+      return;
+    }
+    if (nameInput.trim()) {
+      startNewSession(nameInput.trim());
+      setNameInput("");
+      return;
+    }
+    startWithoutSession();
+  }
 
   return (
     <div className="rounded-3xl border-2 border-white/70 bg-white/80 p-6 shadow-md backdrop-blur">
       <div className="mb-3 flex gap-2">
         <button
           onClick={() => switchMode("pomodoro")}
-          className={`rounded-full px-4 py-2 text-base font-bold transition ${
+          disabled={isRunning}
+          title={isRunning ? "측정 중에는 모드를 바꿀 수 없어요. 먼저 일시정지하거나 종료·저장해주세요." : undefined}
+          className={`rounded-full px-4 py-2 text-base font-bold transition disabled:opacity-40 ${
             mode === "pomodoro"
               ? "bg-gradient-to-r from-angel-pink-300 to-strawberry-milk-300 text-white shadow"
               : "bg-angel-pink-50 text-[#a8889a]"
@@ -40,13 +108,15 @@ export default function FocusTimer() {
         </button>
         <button
           onClick={() => switchMode("stopwatch")}
-          className={`rounded-full px-4 py-2 text-base font-bold transition ${
+          disabled={isRunning}
+          title={isRunning ? "측정 중에는 모드를 바꿀 수 없어요. 먼저 일시정지하거나 종료·저장해주세요." : undefined}
+          className={`rounded-full px-4 py-2 text-base font-bold transition disabled:opacity-40 ${
             mode === "stopwatch"
               ? "bg-gradient-to-r from-sky-blue-300 to-mint-300 text-white shadow"
               : "bg-sky-blue-50 text-[#a8889a]"
           }`}
         >
-          ⏱️ 스톱워치
+          ⏱️ 타이머
         </button>
       </div>
 
@@ -75,6 +145,35 @@ export default function FocusTimer() {
         </p>
       )}
 
+      {/* named, resumable record: lets a study/reading session be saved
+          mid-way and continued later, then picked for a share card */}
+      {activeSessionName ? (
+        <p className="mb-1 text-sm font-bold text-[#ff6fa5]">📌 {activeSessionName}</p>
+      ) : !isRunning ? (
+        <div className="mb-2 flex flex-col gap-1.5">
+          <input
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
+            placeholder="새 기록 이름 (예: 수학 숙제, 토지 3권)"
+            className="w-full rounded-full border border-angel-pink-100 bg-white px-3 py-1.5 text-sm placeholder:text-[#cdb8c4]"
+          />
+          {unfinished.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {unfinished.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => resumeSession(s)}
+                  title={`이어하기 · 지금까지 ${formatDuration(s.totalSeconds)}`}
+                  className="rounded-full border border-sky-blue-200 bg-sky-blue-50 px-3 py-1 text-xs font-bold text-[#2b6f8f] hover:bg-sky-blue-100"
+                >
+                  ▶ {s.name} ({formatDuration(s.totalSeconds)})
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : null}
+
       <p
         className={`text-6xl tabular-nums text-[#ff6fa5] drop-shadow-sm ${
           isRunning ? "animate-pulse" : ""
@@ -86,30 +185,33 @@ export default function FocusTimer() {
       <div className="mt-4 flex flex-wrap gap-2">
         {isRunning ? (
           <button
-            onClick={pause}
-            className="rounded-full bg-sky-blue-200 px-5 py-2 text-base font-bold text-[#2b6f8f]"
+            onClick={pauseSession}
+            className="flex items-center gap-1.5 rounded-full bg-gradient-to-b from-sky-blue-200 to-sky-blue-300 px-5 py-2 text-base font-bold text-white shadow-sm shadow-sky-blue-300/50 transition hover:scale-105 active:scale-95"
           >
-            ⏸ 일시정지
+            <PauseIcon /> 일시정지
           </button>
         ) : (
           <button
-            onClick={start}
-            className="rounded-full bg-gradient-to-r from-angel-pink-300 to-strawberry-milk-300 px-5 py-2 text-base font-bold text-white shadow"
+            onClick={handleStart}
+            className="flex items-center gap-1.5 rounded-full bg-gradient-to-b from-angel-pink-300 to-strawberry-milk-400 px-5 py-2 text-base font-bold text-white shadow-sm shadow-angel-pink-300/50 transition hover:scale-105 active:scale-95"
           >
-            ▶ 시작
+            <PlayIcon /> 시작
           </button>
         )}
         <button
           onClick={reset}
-          className="rounded-full bg-angel-pink-50 px-5 py-2 text-base font-bold text-[#a8889a]"
+          className="flex items-center gap-1.5 rounded-full border-2 border-angel-pink-100 bg-white px-5 py-2 text-base font-bold text-[#a8889a] transition hover:scale-105 hover:bg-angel-pink-50 active:scale-95"
         >
-          ↺ 초기화
+          <ResetIcon /> 초기화
         </button>
         <button
-          onClick={stopAndLog}
-          className="rounded-full bg-mint-100 px-5 py-2 text-base font-bold text-[#3a6e58]"
+          onClick={() => {
+            stopAndLog();
+            clearActiveSession();
+          }}
+          className="flex items-center gap-1.5 rounded-full bg-gradient-to-b from-mint-300 to-mint-400 px-5 py-2 text-base font-bold text-white shadow-sm shadow-mint-300/50 transition hover:scale-105 active:scale-95"
         >
-          ✅ 종료·기록
+          <SaveCheckIcon /> 종료·저장
         </button>
       </div>
     </div>

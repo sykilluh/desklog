@@ -6,6 +6,8 @@ export interface DeskObjectDTO {
   isActive: boolean;
   volume: number;
   scale: number;
+  imageData: string | null;
+  variant: string | null;
 }
 
 export interface DeskObjectInput {
@@ -15,4 +17,6 @@ export interface DeskObjectInput {
   isActive?: boolean;
   volume?: number;
   scale?: number;
+  imageData?: string | null;
+  variant?: string | null;
 }

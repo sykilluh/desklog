@@ -42,6 +42,32 @@ export async function getTotalFocusSeconds(userId: number) {
   return result._sum.focusDuration ?? 0;
 }
 
+/** Daily totals (local calendar days) for the last `days` days, oldest first — feeds the records-modal bar graph. */
+export async function getDailyFocusSeconds(userId: number, days: number) {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - (days - 1));
+
+  const logs = await prisma.focusLog.findMany({
+    where: { userId, createdAt: { gte: start } },
+    select: { focusDuration: true, createdAt: true },
+  });
+
+  const buckets = new Map<string, number>();
+  for (let i = 0; i < days; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    buckets.set(d.toISOString().slice(0, 10), 0);
+  }
+
+  for (const log of logs) {
+    const key = log.createdAt.toISOString().slice(0, 10);
+    if (buckets.has(key)) buckets.set(key, (buckets.get(key) ?? 0) + log.focusDuration);
+  }
+
+  return Array.from(buckets.entries()).map(([date, seconds]) => ({ date, seconds }));
+}
+
 export async function getMostUsedAudioPreset(userId: number) {
   const logs = await prisma.focusLog.groupBy({
     by: ["audioPresetName"],
