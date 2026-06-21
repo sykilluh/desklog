@@ -37,6 +37,7 @@ export default function DeskObjectItem({
   onToggleAudio,
   onVolumeChange,
   onScaleChange,
+  onResizeEnd,
   onImageChange,
   onVariantChange,
   onDelete,
@@ -51,6 +52,7 @@ export default function DeskObjectItem({
   onToggleAudio: (object: DeskObjectDTO) => void;
   onVolumeChange: (id: number, volume: number) => void;
   onScaleChange: (id: number, scale: number) => void;
+  onResizeEnd: (id: number) => void;
   onImageChange: (id: number, dataUrl: string) => void;
   onVariantChange: (id: number, variant: string) => void;
   onDelete: (id: number) => void;
@@ -93,6 +95,7 @@ export default function DeskObjectItem({
 
     function handleUp() {
       setResizing(false);
+      onResizeEnd(object.id);
       window.removeEventListener("pointermove", handleMove);
       window.removeEventListener("pointerup", handleUp);
     }

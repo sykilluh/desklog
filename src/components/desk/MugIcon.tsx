@@ -78,6 +78,7 @@ export default function MugIcon({
   variantId,
   photo,
   brewing = false,
+  revealed,
 }: {
   size?: number;
   cupFill?: string;
@@ -89,11 +90,20 @@ export default function MugIcon({
   photo?: string;
   /** Set true to play the ice-then-drink pour-in intro (e.g. when a focus session starts). */
   brewing?: boolean;
+  /** Drives a step-by-step "empty cup filling up" reveal instead of showing
+   * everything (or the finished photo) at once — used while a drink is
+   * being crafted, so the cup visibly gains ice/liquid/cream as each step
+   * completes rather than looking done from the very first click. When
+   * omitted, falls back to the normal fully-shown (or photo) rendering. */
+  revealed?: { ice: boolean; liquid: boolean; cream: boolean };
 }) {
   const uid = `${cupFill}-${liquidFill}`.replace(/[^a-zA-Z0-9]/g, "");
   const isIced = variantId === "iceAmericano";
   const hasCrema = variantId === "iceAmericano";
   const hasMilkPour = variantId === "milkTea" || variantId === "vanillaLatte" || variantId === "matcha";
+  const showIce = revealed ? revealed.ice : true;
+  const showLiquid = revealed ? revealed.liquid : true;
+  const showCream = !!revealed?.cream;
 
   // Replay the pour-in animation only on the false -> true edge of `brewing`
   // (e.g. the moment a focus session starts), not on every re-render while
@@ -105,7 +115,10 @@ export default function MugIcon({
     prevBrewing.current = brewing;
   }, [brewing]);
 
-  if (photo) {
+  // `revealed` always forces the drawn SVG cup (even if a photo is set) —
+  // the real product photo is the finished-drink reward shown only once
+  // every step is done, not the thing being progressively filled in.
+  if (photo && !revealed) {
     return (
       <div key={pourKey} className="pour-photo" style={{ width: size, height: size * 1.1 }}>
         <img
@@ -175,7 +188,7 @@ export default function MugIcon({
       />
 
       {/* ice cubes drop in first, then the liquid pours in underneath them */}
-      {isIced && (
+      {isIced && showIce && (
         <g className="pour-ice" opacity="0.9" style={{ transformOrigin: "23px 22px" }}>
           <rect x="16" y="19.5" width="4.4" height="4.4" rx="0.8" fill="#eaf7ff" stroke="#bfe6f7" strokeWidth="0.8" transform="rotate(-8 18 22)" />
           <rect x="24" y="20.5" width="4" height="4" rx="0.8" fill="#f3fbff" stroke="#bfe6f7" strokeWidth="0.8" transform="rotate(10 26 22)" />
@@ -183,25 +196,43 @@ export default function MugIcon({
         </g>
       )}
 
-      <g className="pour-liquid" style={{ transformOrigin: "23px 46px" }}>
-        {/* liquid surface */}
-        <ellipse cx="23" cy="21.3" rx="12.5" ry="3" fill={`url(#liquid-${uid})`} stroke={liquidStroke} strokeWidth="1.2" />
+      {showLiquid && (
+        <g className="pour-liquid" style={{ transformOrigin: "23px 46px" }}>
+          {/* liquid surface */}
+          <ellipse cx="23" cy="21.3" rx="12.5" ry="3" fill={`url(#liquid-${uid})`} stroke={liquidStroke} strokeWidth="1.2" />
 
-        {/* crema/foam layer for americano (subtle bubbles ring at surface edge) */}
-        {hasCrema && !isIced && <ellipse cx="23" cy="20.4" rx="11.5" ry="1.5" fill="#caa37a" opacity="0.55" />}
+          {/* crema/foam layer for americano (subtle bubbles ring at surface edge) */}
+          {hasCrema && !isIced && <ellipse cx="23" cy="20.4" rx="11.5" ry="1.5" fill="#caa37a" opacity="0.55" />}
 
-        {/* milk-pour layered gradient look for latte/milk tea/matcha */}
-        {hasMilkPour && (
+          {/* milk-pour layered gradient look for latte/milk tea/matcha */}
+          {hasMilkPour && (
+            <path
+              d="M16 21c1.5 1.4 2.7 3 2.7 5.2 0 2-1.2 3.3-1.2 5.2 0 1.7 1 2.7 1 4.3"
+              stroke="#fff7ec"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              fill="none"
+              opacity="0.6"
+            />
+          )}
+        </g>
+      )}
+
+      {/* whipped cream dollop — only ever rendered while progressively
+          revealing a drink that has a cream step; the finished photo (not
+          this drawn version) is the reward once everything is done. */}
+      {showCream && (
+        <g className="pour-cream" style={{ transformOrigin: "23px 18px" }}>
           <path
-            d="M16 21c1.5 1.4 2.7 3 2.7 5.2 0 2-1.2 3.3-1.2 5.2 0 1.7 1 2.7 1 4.3"
-            stroke="#fff7ec"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            fill="none"
-            opacity="0.6"
+            d="M13.5 19c2-3.2 5.3-4.4 9.5-4.4s7.5 1.2 9.5 4.4c-1.1 2.1-4.6 3.2-9.5 3.2s-8.4-1.1-9.5-3.2z"
+            fill="#fff8ee"
+            stroke="#f0e3cf"
+            strokeWidth="1"
           />
-        )}
-      </g>
+          <circle cx="18.5" cy="15" r="2.3" fill="#fff8ee" stroke="#f0e3cf" strokeWidth="0.8" />
+          <circle cx="24.5" cy="13.3" r="1.7" fill="#fff8ee" stroke="#f0e3cf" strokeWidth="0.8" />
+        </g>
+      )}
 
       {/* rim highlight */}
       <path d="M12.4 22.5c1.6 1 6 1.8 10.6 1.8s9-0.8 10.6-1.8" stroke="rgba(255,255,255,0.55)" strokeWidth="1" fill="none" />
@@ -226,7 +257,20 @@ export default function MugIcon({
           animation: pour-ice-in 0.4s cubic-bezier(0.34, 1.4, 0.64, 1) backwards;
         }
         .pour-liquid {
-          animation: pour-liquid-in 0.5s ease-out 0.3s backwards;
+          animation: pour-liquid-in 0.5s ease-out backwards;
+        }
+        .pour-cream {
+          animation: pour-cream-in 0.4s cubic-bezier(0.34, 1.4, 0.64, 1) backwards;
+        }
+        @keyframes pour-cream-in {
+          0% {
+            transform: translateY(-10px) scale(0.7);
+            opacity: 0;
+          }
+          100% {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+          }
         }
         @keyframes pour-ice-in {
           0% {
