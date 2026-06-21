@@ -84,6 +84,14 @@ export default function FocusTimer() {
   // exactly when the inline "이름 붙이기" field below should offer to rename it.
   const isAutoNamed = !!activeSessionName && /^time\d+$/.test(activeSessionName);
   const unfinished = sessions.filter((s) => !s.isCompleted);
+  // A record is locked to whichever mode/preset it was created under — only
+  // disabling these while isRunning let you pause a pomodoro record, flip to
+  // 타이머 mode (allowed since paused), then press 시작 again, which resumed
+  // the SAME pomodoro record but now ticking as a stopwatch. Saving after
+  // that wrote stopwatch-shaped data (elapsed seconds, no phase) onto a
+  // pomodoro record, corrupting it. Locking these out for the whole time a
+  // record is attached — paused or running — closes that gap.
+  const modeLocked = isRunning || !!activeSessionId;
 
   function handleNameActive() {
     if (!liveNameInput.trim()) return;
@@ -109,8 +117,8 @@ export default function FocusTimer() {
       <div className="mb-3 flex gap-2">
         <button
           onClick={() => switchMode("pomodoro")}
-          disabled={isRunning}
-          title={isRunning ? "측정 중에는 모드를 바꿀 수 없어요. 먼저 일시정지하거나 종료·저장해주세요." : undefined}
+          disabled={modeLocked}
+          title={modeLocked ? "측정 중인 기록이 있으면 모드를 바꿀 수 없어요. 먼저 종료·저장해주세요." : undefined}
           className={`rounded-full px-4 py-2 text-base font-bold transition disabled:opacity-40 ${
             mode === "pomodoro"
               ? "bg-gradient-to-r from-angel-pink-300 to-strawberry-milk-300 text-white shadow"
@@ -121,8 +129,8 @@ export default function FocusTimer() {
         </button>
         <button
           onClick={() => switchMode("stopwatch")}
-          disabled={isRunning}
-          title={isRunning ? "측정 중에는 모드를 바꿀 수 없어요. 먼저 일시정지하거나 종료·저장해주세요." : undefined}
+          disabled={modeLocked}
+          title={modeLocked ? "측정 중인 기록이 있으면 모드를 바꿀 수 없어요. 먼저 종료·저장해주세요." : undefined}
           className={`rounded-full px-4 py-2 text-base font-bold transition disabled:opacity-40 ${
             mode === "stopwatch"
               ? "bg-gradient-to-r from-sky-blue-300 to-mint-300 text-white shadow"
@@ -139,7 +147,7 @@ export default function FocusTimer() {
             <button
               key={p.focusMinutes}
               onClick={() => selectPreset(p)}
-              disabled={isRunning}
+              disabled={modeLocked}
               className={`rounded-full px-4 py-1.5 text-sm font-bold disabled:opacity-40 ${
                 preset.focusMinutes === p.focusMinutes
                   ? "bg-mint-200 text-[#3a6e58]"

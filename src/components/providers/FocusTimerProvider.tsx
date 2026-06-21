@@ -153,9 +153,20 @@ export default function FocusTimerProvider({ children }: { children: React.React
   // without touching activeSessionId — startWithoutSession would wipe it,
   // which silently detached a paused, named record from the timer the
   // moment "시작" was pressed again with an empty name field.
+  //
+  // Backstop re-check on the mode: the UI already locks the mode toggle
+  // while a record is attached, but if it ever drifted (e.g. the toggle was
+  // used while paused, before that lock existed), resuming would otherwise
+  // tick a pomodoro-created record as a stopwatch or vice versa — saving
+  // would then write the wrong shape of data (elapsed-not-phase, or a phase
+  // for something with no real phase) onto that one record.
   const continueActiveSession = useCallback(() => {
+    if (activeSessionId != null) {
+      const session = focusSessions.sessions.find((s) => s.id === activeSessionId);
+      if (session && session.mode !== timer.mode) timer.switchMode(session.mode);
+    }
     timer.start();
-  }, [timer]);
+  }, [activeSessionId, focusSessions.sessions, timer]);
 
   // Starting with no name still creates a record (the server auto-names it
   // "time1", "time2", ...) instead of leaving the run completely untracked —

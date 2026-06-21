@@ -25,7 +25,13 @@ export default function MainPage() {
   const { objects, setObjects, isLoading, isSaving, save } = useDeskObjects();
   const { challenges } = useChallenges();
   const youtube = usePlaylist();
-  const { todayFocusSeconds, isRunning: isTimerRunning, phase: timerPhase, startWithoutSession } = useGlobalFocusTimer();
+  const {
+    todayFocusSeconds,
+    isRunning: isTimerRunning,
+    phase: timerPhase,
+    activeSessionId: activeTimerSessionId,
+    startWithoutSession,
+  } = useGlobalFocusTimer();
   const isStudying = isTimerRunning && timerPhase === "focus";
   const [editMode, setEditMode] = useState(false);
   const [showRecommendMenu, setShowRecommendMenu] = useState(false);
@@ -185,7 +191,12 @@ export default function MainPage() {
       ];
     });
     setShowRecommendMenu(false);
-    startWithoutSession();
+    // Only auto-start a fresh (auto-named) run if nothing's already going or
+    // paused-but-attached — unconditionally starting here used to abandon
+    // whatever record was already active (named or auto-named, running or
+    // paused) every time a drink was picked, silently orphaning its
+    // progress and resetting the timer to a brand new session.
+    if (!isTimerRunning && activeTimerSessionId == null) startWithoutSession();
   }
 
   function handleDeleteObject(id: number) {
