@@ -9,19 +9,21 @@ datasource db {
 }
 
 model User {
-  id           Int            @id @default(autoincrement())
-  email        String         @unique
-  password     String
-  nickname     String?
-  createdAt    DateTime       @default(now()) @map("created_at")
-  desks        DeskObject[]
-  challenges   Challenge[]
-  focusLogs    FocusLog[]
-  focusSessions FocusSession[]
-  todos        Todo[]
-  plantWaterings PlantWatering[]
-  bookReviews  BookReview[]
-  deskSetting  DeskSetting?
+  id               Int             @id @default(autoincrement())
+  email            String          @unique
+  password         String
+  nickname         String?
+  /// 주간/월간 분석 패널의 "목표 달성률"이 비교 대상으로 쓰는 하루 집중 목표(분).
+  dailyGoalMinutes Int             @default(60) @map("daily_goal_minutes")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  desks            DeskObject[]
+  challenges       Challenge[]
+  focusLogs        FocusLog[]
+  focusSessions    FocusSession[]
+  todos            Todo[]
+  plantWaterings   PlantWatering[]
+  bookReviews      BookReview[]
+  deskSetting      DeskSetting?
 
   @@map("users")
 }
@@ -44,9 +46,9 @@ model DeskObject {
 }
 
 model DeskSetting {
-  id           Int      @id @default(autoincrement())
-  userId       Int      @unique @map("user_id")
-  user         User     @relation(fields: [userId], references: [id])
+  id              Int      @id @default(autoincrement())
+  userId          Int      @unique @map("user_id")
+  user            User     @relation(fields: [userId], references: [id])
   backgroundId    String   @default("default") @map("background_id")
   backgroundImage String?  @map("background_image")
   updatedAt       DateTime @updatedAt @map("updated_at")
@@ -55,18 +57,18 @@ model DeskSetting {
 }
 
 model Challenge {
-  id              Int       @id @default(autoincrement())
-  userId          Int       @map("user_id")
-  user            User      @relation(fields: [userId], references: [id])
-  title           String
-  totalPages      Int       @map("total_pages")
-  currentPages    Int       @default(0) @map("current_pages")
-  startDate       DateTime  @map("start_date")
-  endDate         DateTime  @map("end_date")
-  totalFocusTime  Int       @default(0) @map("total_focus_time")
-  status          ChallengeStatus @default(PROGRESS)
-  createdAt       DateTime  @default(now()) @map("created_at")
-  focusLogs       FocusLog[]
+  id             Int             @id @default(autoincrement())
+  userId         Int             @map("user_id")
+  user           User            @relation(fields: [userId], references: [id])
+  title          String
+  totalPages     Int             @map("total_pages")
+  currentPages   Int             @default(0) @map("current_pages")
+  startDate      DateTime        @map("start_date")
+  endDate        DateTime        @map("end_date")
+  totalFocusTime Int             @default(0) @map("total_focus_time")
+  status         ChallengeStatus @default(PROGRESS)
+  createdAt      DateTime        @default(now()) @map("created_at")
+  focusLogs      FocusLog[]
 
   @@map("challenges")
 }
@@ -95,16 +97,32 @@ model FocusLog {
 /// across multiple start/pause cycles and can be picked later to build a
 /// share card.
 model FocusSession {
-  id           Int      @id @default(autoincrement())
-  userId       Int      @map("user_id")
-  user         User     @relation(fields: [userId], references: [id])
-  name         String
-  totalSeconds Int      @default(0) @map("total_seconds")
-  isCompleted  Boolean  @default(false) @map("is_completed")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id                 Int              @id @default(autoincrement())
+  userId             Int              @map("user_id")
+  user               User             @relation(fields: [userId], references: [id])
+  name               String
+  /// 뽀모도로/타이머(스톱워치)는 단위가 다른 시간 기록이라 한 레코드에 섞이지 않도록
+  /// 생성 시점의 모드를 고정해서 저장한다 — 이어하기도 항상 이 모드로 강제된다.
+  mode               FocusSessionMode @default(POMODORO)
+  totalSeconds       Int              @default(0) @map("total_seconds")
+  /// Snapshot of the live timer at the moment this record was last
+  /// stopped·저장 — pomodoro's remaining countdown in `lastPhase`, or the
+  /// stopwatch's elapsed count. Resuming restores the timer to exactly this
+  /// position instead of restarting the full preset / 0:00.
+  lastSeconds        Int              @default(0) @map("last_seconds")
+  lastPhase          String           @default("focus") @map("last_phase")
+  presetFocusMinutes Int              @default(25) @map("preset_focus_minutes")
+  presetBreakMinutes Int              @default(5) @map("preset_break_minutes")
+  isCompleted        Boolean          @default(false) @map("is_completed")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
 
   @@map("focus_sessions")
+}
+
+enum FocusSessionMode {
+  POMODORO
+  STOPWATCH
 }
 
 model Todo {
@@ -132,22 +150,22 @@ model PlantWatering {
 }
 
 model BookReview {
-  id          Int      @id @default(autoincrement())
-  userId      Int      @map("user_id")
-  user        User     @relation(fields: [userId], references: [id])
-  bookTitle   String   @map("book_title")
-  summary     String?
-  review      String?
-  quote       String?
-  food        String?
-  music       String?
-  showDuration Boolean @default(false) @map("show_duration")
-  showWeatherNote Boolean @default(false) @map("show_weather_note")
-  todayActivity String? @map("today_activity")
-  durationMinutes Int? @map("duration_minutes")
-  rating      Int      @default(5)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id              Int      @id @default(autoincrement())
+  userId          Int      @map("user_id")
+  user            User     @relation(fields: [userId], references: [id])
+  bookTitle       String   @map("book_title")
+  summary         String?
+  review          String?
+  quote           String?
+  food            String?
+  music           String?
+  showDuration    Boolean  @default(false) @map("show_duration")
+  showWeatherNote Boolean  @default(false) @map("show_weather_note")
+  todayActivity   String?  @map("today_activity")
+  durationMinutes Int?     @map("duration_minutes")
+  rating          Int      @default(5)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   @@map("book_reviews")
 }

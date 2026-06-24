@@ -3,6 +3,7 @@ import { sendOk, sendError, ServiceError } from "@/lib/response";
 import {
   addFocusSessionSeconds,
   updateFocusSession,
+  saveFocusSessionProgress,
   deleteFocusSession,
 } from "@/lib/services/focusSessionService";
 import { getCurrentUserId } from "@/lib/services/userService";
@@ -21,6 +22,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       session = await updateFocusSession(userId, id, {
         name: body.name,
         isCompleted: body.isCompleted,
+      });
+    }
+    if (typeof body.lastSeconds === "number") {
+      session = await saveFocusSessionProgress(userId, id, {
+        lastSeconds: body.lastSeconds,
+        lastPhase: body.lastPhase === "break" ? "break" : "focus",
+        presetFocusMinutes: body.presetFocusMinutes,
+        presetBreakMinutes: body.presetBreakMinutes,
       });
     }
 

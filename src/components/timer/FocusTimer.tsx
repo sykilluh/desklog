@@ -14,8 +14,9 @@ function formatTime(totalSeconds: number) {
 function formatDuration(totalSeconds: number) {
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
-  if (h > 0) return `${h}시간 ${m}분`;
-  return `${m}분`;
+  const s = Math.floor(totalSeconds % 60);
+  if (h > 0) return `${h}시간 ${m}분 ${s}초`;
+  return `${m}분 ${s}초`;
 }
 
 function PlayIcon() {
@@ -63,20 +64,40 @@ export default function FocusTimer() {
     switchMode,
     selectPreset,
     reset,
-    stopAndLog,
     sessions,
     activeSessionId,
     activeSessionName,
     startNewSession,
     resumeSession,
     startWithoutSession,
+    nameActiveSession,
     continueActiveSession,
     pauseSession,
-    clearActiveSession,
+    stopAndSaveSession,
   } = useGlobalFocusTimer();
 
   const [nameInput, setNameInput] = useState("");
+  const [liveNameInput, setLiveNameInput] = useState("");
+  // Every session is now created with a real name from the moment it's
+  // resumed/started (the server auto-names blank ones "time1", "time2", ...),
+  // so "no name yet" only ever means the auto-generated placeholder — that's
+  // exactly when the inline "이름 붙이기" field below should offer to rename it.
+  const isAutoNamed = !!activeSessionName && /^time\d+$/.test(activeSessionName);
   const unfinished = sessions.filter((s) => !s.isCompleted);
+  // A record is locked to whichever mode/preset it was created under — only
+  // disabling these while isRunning let you pause a pomodoro record, flip to
+  // 타이머 mode (allowed since paused), then press 시작 again, which resumed
+  // the SAME pomodoro record but now ticking as a stopwatch. Saving after
+  // that wrote stopwatch-shaped data (elapsed seconds, no phase) onto a
+  // pomodoro record, corrupting it. Locking these out for the whole time a
+  // record is attached — paused or running — closes that gap.
+  const modeLocked = isRunning || !!activeSessionId;
+
+  function handleNameActive() {
+    if (!liveNameInput.trim()) return;
+    nameActiveSession(liveNameInput.trim());
+    setLiveNameInput("");
+  }
 
   function handleStart() {
     if (activeSessionId) {
@@ -96,8 +117,8 @@ export default function FocusTimer() {
       <div className="mb-3 flex gap-2">
         <button
           onClick={() => switchMode("pomodoro")}
-          disabled={isRunning}
-          title={isRunning ? "측정 중에는 모드를 바꿀 수 없어요. 먼저 일시정지하거나 종료·저장해주세요." : undefined}
+          disabled={modeLocked}
+          title={modeLocked ? "측정 중인 기록이 있으면 모드를 바꿀 수 없어요. 먼저 종료·저장해주세요." : undefined}
           className={`rounded-full px-4 py-2 text-base font-bold transition disabled:opacity-40 ${
             mode === "pomodoro"
               ? "bg-gradient-to-r from-angel-pink-300 to-strawberry-milk-300 text-white shadow"
@@ -108,8 +129,8 @@ export default function FocusTimer() {
         </button>
         <button
           onClick={() => switchMode("stopwatch")}
-          disabled={isRunning}
-          title={isRunning ? "측정 중에는 모드를 바꿀 수 없어요. 먼저 일시정지하거나 종료·저장해주세요." : undefined}
+          disabled={modeLocked}
+          title={modeLocked ? "측정 중인 기록이 있으면 모드를 바꿀 수 없어요. 먼저 종료·저장해주세요." : undefined}
           className={`rounded-full px-4 py-2 text-base font-bold transition disabled:opacity-40 ${
             mode === "stopwatch"
               ? "bg-gradient-to-r from-sky-blue-300 to-mint-300 text-white shadow"
@@ -126,7 +147,7 @@ export default function FocusTimer() {
             <button
               key={p.focusMinutes}
               onClick={() => selectPreset(p)}
-              disabled={isRunning}
+              disabled={modeLocked}
               className={`rounded-full px-4 py-1.5 text-sm font-bold disabled:opacity-40 ${
                 preset.focusMinutes === p.focusMinutes
                   ? "bg-mint-200 text-[#3a6e58]"
@@ -147,14 +168,35 @@ export default function FocusTimer() {
 
       {/* named, resumable record: lets a study/reading session be saved
           mid-way and continued later, then picked for a share card */}
-      {activeSessionName ? (
+      {activeSessionName && !isAutoNamed ? (
         <p className="mb-1 text-sm font-bold text-[#ff6fa5]">📌 {activeSessionName}</p>
+      ) : activeSessionName && isAutoNamed ? (
+        // Started without typing a name — it's already saved under an
+        // auto-generated "timeN" label, so this is purely optional: give it
+        // a real name any time without losing the time already measured.
+        <div className="mb-2 flex items-center gap-1.5">
+          <span className="shrink-0 text-sm font-bold text-[#cdb8c4]">📌 {activeSessionName}</span>
+          <input
+            value={liveNameInput}
+            onChange={(e) => setLiveNameInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleNameActive()}
+            placeholder="이름 붙이기 (선택)"
+            className="w-full rounded-full border border-angel-pink-100 bg-white px-3 py-1 text-xs placeholder:text-[#cdb8c4]"
+          />
+          <button
+            onClick={handleNameActive}
+            disabled={!liveNameInput.trim()}
+            className="shrink-0 rounded-full bg-angel-pink-100 px-2.5 py-1 text-xs font-bold text-[#a8576b] disabled:opacity-40"
+          >
+            저장
+          </button>
+        </div>
       ) : !isRunning ? (
         <div className="mb-2 flex flex-col gap-1.5">
           <input
             value={nameInput}
             onChange={(e) => setNameInput(e.target.value)}
-            placeholder="새 기록 이름 (예: 수학 숙제, 토지 3권)"
+            placeholder="새 기록 이름 (예: 수학 숙제, 토지 3권) — 비워두면 time1, time2...로 저장돼요"
             className="w-full rounded-full border border-angel-pink-100 bg-white px-3 py-1.5 text-sm placeholder:text-[#cdb8c4]"
           />
           {unfinished.length > 0 && (
@@ -166,7 +208,7 @@ export default function FocusTimer() {
                   title={`이어하기 · 지금까지 ${formatDuration(s.totalSeconds)}`}
                   className="rounded-full border border-sky-blue-200 bg-sky-blue-50 px-3 py-1 text-xs font-bold text-[#2b6f8f] hover:bg-sky-blue-100"
                 >
-                  ▶ {s.name} ({formatDuration(s.totalSeconds)})
+                  {s.mode === "stopwatch" ? "⏱️" : "🍅"} ▶ {s.name} ({formatDuration(s.totalSeconds)})
                 </button>
               ))}
             </div>
@@ -205,10 +247,7 @@ export default function FocusTimer() {
           <ResetIcon /> 초기화
         </button>
         <button
-          onClick={() => {
-            stopAndLog();
-            clearActiveSession();
-          }}
+          onClick={stopAndSaveSession}
           className="flex items-center gap-1.5 rounded-full bg-gradient-to-b from-mint-300 to-mint-400 px-5 py-2 text-base font-bold text-white shadow-sm shadow-mint-300/50 transition hover:scale-105 active:scale-95"
         >
           <SaveCheckIcon /> 종료·저장

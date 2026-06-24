@@ -10,7 +10,7 @@ import type { DeskObjectInput } from "@/types/desk";
 export default function CafePage() {
   const router = useRouter();
   const { objects, setObjects, save, isLoading } = useDeskObjects();
-  const { startWithoutSession } = useGlobalFocusTimer();
+  const { isRunning: isTimerRunning, activeSessionId: activeTimerSessionId, startWithoutSession } = useGlobalFocusTimer();
 
   async function handleComplete(drinkId: string) {
     const existingCup = objects.find((obj) => obj.objectName === "cup");
@@ -48,7 +48,9 @@ export default function CafePage() {
     // to "/" right after, which remounts useDeskObjects and refetches from
     // the API. Without saving here first, the new cup would vanish.
     await save(payload);
-    startWithoutSession();
+    // Same guard as the in-page recommend modal — don't abandon an already
+    // running/paused record just because a drink was picked here too.
+    if (!isTimerRunning && activeTimerSessionId == null) startWithoutSession();
     router.push("/");
   }
 

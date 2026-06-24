@@ -8,6 +8,7 @@ import ObjectInventory from "@/components/desk/ObjectInventory";
 import DeskCanvas, { DESK_CANVAS_ID } from "@/components/desk/DeskCanvas";
 import FocusTimer from "@/components/timer/FocusTimer";
 import FocusRecordsPanel from "@/components/timer/FocusRecordsPanel";
+import FocusAnalyticsPanel from "@/components/timer/FocusAnalyticsPanel";
 import TodayRecommendMenu from "@/components/timer/TodayRecommendMenu";
 import VisualFeedback from "@/components/timer/VisualFeedback";
 import YoutubeMixer from "@/components/audio/YoutubeMixer";
@@ -25,7 +26,13 @@ export default function MainPage() {
   const { objects, setObjects, isLoading, isSaving, save } = useDeskObjects();
   const { challenges } = useChallenges();
   const youtube = usePlaylist();
-  const { todayFocusSeconds, isRunning: isTimerRunning, phase: timerPhase, startWithoutSession } = useGlobalFocusTimer();
+  const {
+    todayFocusSeconds,
+    isRunning: isTimerRunning,
+    phase: timerPhase,
+    activeSessionId: activeTimerSessionId,
+    startWithoutSession,
+  } = useGlobalFocusTimer();
   const isStudying = isTimerRunning && timerPhase === "focus";
   const [editMode, setEditMode] = useState(false);
   const [showRecommendMenu, setShowRecommendMenu] = useState(false);
@@ -185,7 +192,12 @@ export default function MainPage() {
       ];
     });
     setShowRecommendMenu(false);
-    startWithoutSession();
+    // Only auto-start a fresh (auto-named) run if nothing's already going or
+    // paused-but-attached — unconditionally starting here used to abandon
+    // whatever record was already active (named or auto-named, running or
+    // paused) every time a drink was picked, silently orphaning its
+    // progress and resetting the timer to a brand new session.
+    if (!isTimerRunning && activeTimerSessionId == null) startWithoutSession();
   }
 
   function handleDeleteObject(id: number) {
@@ -427,6 +439,7 @@ export default function MainPage() {
             onSeekBoost={handleSeekBoost}
           />
           <FocusTimer />
+          <FocusAnalyticsPanel />
           <FocusRecordsPanel onOpenRecommend={() => setShowRecommendMenu(true)} />
           <VisualFeedback todayFocusSeconds={todayFocusSeconds} progressRate={progressRate} />
         </div>

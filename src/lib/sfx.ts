@@ -191,91 +191,94 @@ export function playGrindCrankTick(turn: number) {
   burst.stop(t + 0.1);
 }
 
-/** A single ice cube dropping in — a proper rattly "달그락" of 2-3 clinks
- * (always at least two; one cube alone almost always knocks against another
- * or the glass wall on the way in), louder and more present than a single
- * faint tap. */
+/** A single ice cube dropping in — a clean "달그락 달그락" double-knock,
+ * with a clear gap between the two hits instead of a blurred rattle, so
+ * each one reads as a distinct clink-clink rather than a single crunch. */
 export function playIceDropTick() {
   const c = getCtx();
   if (!c) return;
   const now = c.currentTime;
   const pitches = [3600, 4300, 3200, 3900, 4700, 5200];
-  const count = 2 + (Math.random() > 0.5 ? 1 : 0);
-  let t = now;
-  for (let i = 0; i < count; i++) {
-    playClink(c, pitches[Math.floor(Math.random() * pitches.length)], t, 0.32 * (1 - i * 0.18));
-    t += 0.035 + Math.random() * 0.03;
-  }
+  playClink(c, pitches[Math.floor(Math.random() * pitches.length)], now, 0.34);
+  playClink(c, pitches[Math.floor(Math.random() * pitches.length)], now + 0.1, 0.26);
 }
 
 /**
- * A real little pour: an audible rushing stream (filtered noise with a
- * wobbling amplitude so it reads as glugging liquid, not a flat hiss) plus
- * a couple of low "glug" thumps — long and loud enough to clearly register
- * as "음료가 쪼르르 부어지는 소리", not just a faint blip.
+ * 쪼르륵: a thin, fast, slightly babbling trickle — not a heavy glug. Higher
+ * pitched and quicker-fluttering than a held pour, so it reads as a light
+ * stream splashing into the cup rather than a deep gurgle.
  */
 export function playPourGlugTick() {
   const c = getCtx();
   if (!c) return;
   const now = c.currentTime;
-  const duration = 0.48;
+  const duration = 0.42;
 
   const source = c.createBufferSource();
   source.buffer = noiseBuffer(c, duration);
   const filter = c.createBiquadFilter();
   filter.type = "bandpass";
-  filter.frequency.setValueAtTime(820, now);
-  filter.frequency.linearRampToValueAtTime(560, now + duration);
-  filter.Q.value = 0.8;
+  filter.frequency.setValueAtTime(1500, now);
+  filter.frequency.linearRampToValueAtTime(1050, now + duration);
+  filter.Q.value = 1.1;
 
-  // amplitude wobble so the stream glugs instead of hissing flatly
-  const wobble = c.createOscillator();
-  wobble.frequency.value = 9;
-  const wobbleGain = c.createGain();
-  wobbleGain.gain.value = 0.5;
-  const wobbleTarget = c.createGain();
-  wobbleTarget.gain.value = 1;
-  wobble.connect(wobbleGain).connect(wobbleTarget.gain);
+  // fast flutter so the stream babbles/trickles instead of hissing flatly
+  const flutter = c.createOscillator();
+  flutter.frequency.value = 17;
+  const flutterGain = c.createGain();
+  flutterGain.gain.value = 0.55;
+  const flutterTarget = c.createGain();
+  flutterTarget.gain.value = 1;
+  flutter.connect(flutterGain).connect(flutterTarget.gain);
+
+  // a second, slightly detuned flutter layered in for an irregular
+  // "babbling" texture rather than one clean tremolo
+  const flutter2 = c.createOscillator();
+  flutter2.frequency.value = 23;
+  const flutter2Gain = c.createGain();
+  flutter2Gain.gain.value = 0.3;
+  flutter2.connect(flutter2Gain).connect(flutterTarget.gain);
 
   const envelope = c.createGain();
   envelope.gain.setValueAtTime(0, now);
-  envelope.gain.linearRampToValueAtTime(0.32, now + 0.05);
-  envelope.gain.setValueAtTime(0.32, now + duration - 0.16);
+  envelope.gain.linearRampToValueAtTime(0.24, now + 0.035);
+  envelope.gain.setValueAtTime(0.24, now + duration - 0.13);
   envelope.gain.linearRampToValueAtTime(0, now + duration);
 
-  source.connect(filter).connect(wobbleTarget).connect(envelope);
+  source.connect(filter).connect(flutterTarget).connect(envelope);
   connectOut(c, envelope, 0.22);
   source.start(now);
-  wobble.start(now);
+  flutter.start(now);
+  flutter2.start(now);
   source.stop(now + duration);
-  wobble.stop(now + duration);
+  flutter.stop(now + duration);
+  flutter2.stop(now + duration);
 
-  [0.02, 0.18].forEach((delay) => {
-    const t = now + delay;
-    const thump = c.createOscillator();
-    thump.type = "sine";
-    thump.frequency.setValueAtTime(170, t);
-    thump.frequency.exponentialRampToValueAtTime(85, t + 0.13);
-    const thumpGain = c.createGain();
-    softHit(c, thumpGain, t, 0.16, 0.006, 0.13);
-    thump.connect(thumpGain);
-    connectOut(c, thumpGain, 0.18);
-    thump.start(t);
-    thump.stop(t + 0.16);
-  });
+  // one light high splash right at the start, not a deep low thump
+  const splash = c.createBufferSource();
+  splash.buffer = noiseBuffer(c, 0.05);
+  const splashFilter = c.createBiquadFilter();
+  splashFilter.type = "highpass";
+  splashFilter.frequency.value = 2200;
+  const splashGain = c.createGain();
+  softHit(c, splashGain, now, 0.1, 0.004, 0.05);
+  splash.connect(splashFilter).connect(splashGain);
+  connectOut(c, splashGain, 0.2);
+  splash.start(now);
+  splash.stop(now + 0.06);
 }
 
 /**
- * Whipped cream: a long, breathy "푸우우욱" swell that blooms in and trails
- * off, with a slow wobbling modulation on top so it sounds squishy/molten
- * ("몽글몽글") rather than a thin aerosol hiss — plus the little mechanical
- * trigger click right at the start of a can being pressed.
+ * 푸슈슈룩: an airy "푸슈슈" hiss swell, finished off with a distinct wet
+ * "룩" squelch/blop right at the tail — the squelch is what was missing
+ * before; without it the hiss alone just sounds like a spray can, not cream
+ * landing in a soft dollop.
  */
 export function playCreamPuffTick() {
   const c = getCtx();
   if (!c) return;
   const now = c.currentTime;
-  const duration = 0.65;
+  const hissDuration = 0.42;
 
   const click = c.createBufferSource();
   click.buffer = noiseBuffer(c, 0.02);
@@ -289,35 +292,47 @@ export function playCreamPuffTick() {
   click.start(now);
   click.stop(now + 0.03);
 
+  // 푸슈슈 — airy hiss swell
   const hiss = c.createBufferSource();
-  hiss.buffer = noiseBuffer(c, duration);
+  hiss.buffer = noiseBuffer(c, hissDuration);
   const hissFilter = c.createBiquadFilter();
-  hissFilter.type = "lowpass";
-  hissFilter.frequency.setValueAtTime(2200, now + 0.02);
-  hissFilter.frequency.linearRampToValueAtTime(1400, now + duration);
-
-  // slow squishy wobble — gives the "몽글몽글" bubbling texture instead of a
-  // flat steady hiss
-  const wobble = c.createOscillator();
-  wobble.frequency.value = 7;
-  const wobbleGain = c.createGain();
-  wobbleGain.gain.value = 0.45;
-  const wobbleTarget = c.createGain();
-  wobbleTarget.gain.value = 1;
-  wobble.connect(wobbleGain).connect(wobbleTarget.gain);
-
+  hissFilter.type = "bandpass";
+  hissFilter.frequency.value = 3400;
+  hissFilter.Q.value = 0.6;
   const hissGain = c.createGain();
   hissGain.gain.setValueAtTime(0, now + 0.02);
-  hissGain.gain.linearRampToValueAtTime(0.22, now + 0.22);
-  hissGain.gain.setValueAtTime(0.22, now + duration - 0.3);
-  hissGain.gain.linearRampToValueAtTime(0, now + duration);
-
-  hiss.connect(hissFilter).connect(wobbleTarget).connect(hissGain);
-  connectOut(c, hissGain, 0.22);
+  hissGain.gain.linearRampToValueAtTime(0.16, now + 0.16);
+  hissGain.gain.linearRampToValueAtTime(0.06, now + hissDuration);
+  hiss.connect(hissFilter).connect(hissGain);
+  connectOut(c, hissGain, 0.2);
   hiss.start(now + 0.02);
-  wobble.start(now + 0.02);
-  hiss.stop(now + duration);
-  wobble.stop(now + duration);
+  hiss.stop(now + hissDuration);
+
+  // 룩 — a soft wet squelch right as the hiss tails off: a quick downward
+  // pitch blob plus a damp low-passed noise "plop"
+  const squelchT = now + hissDuration - 0.04;
+  const blob = c.createOscillator();
+  blob.type = "sine";
+  blob.frequency.setValueAtTime(420, squelchT);
+  blob.frequency.exponentialRampToValueAtTime(140, squelchT + 0.16);
+  const blobGain = c.createGain();
+  softHit(c, blobGain, squelchT, 0.13, 0.01, 0.17);
+  blob.connect(blobGain);
+  connectOut(c, blobGain, 0.22);
+  blob.start(squelchT);
+  blob.stop(squelchT + 0.2);
+
+  const plop = c.createBufferSource();
+  plop.buffer = noiseBuffer(c, 0.1);
+  const plopFilter = c.createBiquadFilter();
+  plopFilter.type = "lowpass";
+  plopFilter.frequency.value = 700;
+  const plopGain = c.createGain();
+  softHit(c, plopGain, squelchT + 0.01, 0.12, 0.008, 0.13);
+  plop.connect(plopFilter).connect(plopGain);
+  connectOut(c, plopGain, 0.22);
+  plop.start(squelchT + 0.01);
+  plop.stop(squelchT + 0.15);
 }
 
 /** One soft dunk of a tea bag, for tap-by-tap steeping. */
@@ -338,25 +353,32 @@ export function playSteepDunkTick() {
   dunk.stop(now + 0.22);
 }
 
-/** A couple of quick whisk taps, for tap-by-tap whisking. */
+/**
+ * 스슥 스슥: a dry, grainy brushing/scraping sweep — like a bamboo whisk
+ * dragging through fine dry powder — not a wet percussive tap. Two quick
+ * sweeps of bright, narrow-band noise with a fast attack and a slightly
+ * longer scrape-like decay than a tap would have.
+ */
 export function playWhiskStrokeTick() {
   const c = getCtx();
   if (!c) return;
   const now = c.currentTime;
-  [0, 0.07].forEach((delay, i) => {
+  [0, 0.1].forEach((delay, i) => {
     const t = now + delay;
-    const tap = c.createBufferSource();
-    tap.buffer = noiseBuffer(c, 0.03);
-    const tapFilter = c.createBiquadFilter();
-    tapFilter.type = "bandpass";
-    tapFilter.frequency.value = i % 2 === 0 ? 1200 : 950;
-    tapFilter.Q.value = 2.2;
-    const tapGain = c.createGain();
-    softHit(c, tapGain, t, 0.08, 0.004, 0.035);
-    tap.connect(tapFilter).connect(tapGain);
-    connectOut(c, tapGain, 0.18);
-    tap.start(t);
-    tap.stop(t + 0.04);
+    const sweepDuration = 0.09;
+    const sweep = c.createBufferSource();
+    sweep.buffer = noiseBuffer(c, sweepDuration);
+    const sweepFilter = c.createBiquadFilter();
+    sweepFilter.type = "bandpass";
+    sweepFilter.frequency.setValueAtTime(i % 2 === 0 ? 4200 : 3600, t);
+    sweepFilter.frequency.linearRampToValueAtTime(i % 2 === 0 ? 3200 : 2700, t + sweepDuration);
+    sweepFilter.Q.value = 1.4;
+    const sweepGain = c.createGain();
+    softHit(c, sweepGain, t, 0.07, 0.006, sweepDuration);
+    sweep.connect(sweepFilter).connect(sweepGain);
+    connectOut(c, sweepGain, 0.16);
+    sweep.start(t);
+    sweep.stop(t + sweepDuration + 0.01);
   });
 }
 

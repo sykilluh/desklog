@@ -7,8 +7,9 @@ import type { FocusSessionDTO } from "@/hooks/useFocusSessions";
 function formatDuration(totalSeconds: number) {
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
-  if (h > 0) return `${h}시간 ${m}분`;
-  return `${m}분`;
+  const s = Math.floor(totalSeconds % 60);
+  if (h > 0) return `${h}시간 ${m}분 ${s}초`;
+  return `${m}분 ${s}초`;
 }
 
 function formatDay(dateStr: string) {
@@ -109,20 +110,30 @@ export default function FocusRecordsPanel({ onOpenRecommend }: { onOpenRecommend
                 <span className="text-lg">{s.isCompleted ? "🌟" : "📌"}</span>
 
                 <div className="min-w-0 flex-1">
-                  {editingId === s.id ? (
-                    <input
-                      autoFocus
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      onBlur={commitEdit}
-                      onKeyDown={(e) => e.key === "Enter" && commitEdit()}
-                      className="w-full rounded-full border border-angel-pink-200 bg-white px-2.5 py-0.5 text-sm"
-                    />
-                  ) : (
-                    <button onClick={() => startEdit(s)} className="block max-w-full truncate text-left text-sm font-bold text-[#5b4a52]">
-                      {s.name}
-                    </button>
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      title={s.mode === "stopwatch" ? "타이머(스톱워치) 기록" : "뽀모도로 기록"}
+                      className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
+                        s.mode === "stopwatch" ? "bg-sky-blue-100 text-[#2b6f8f]" : "bg-angel-pink-100 text-[#a8576b]"
+                      }`}
+                    >
+                      {s.mode === "stopwatch" ? "⏱️" : "🍅"}
+                    </span>
+                    {editingId === s.id ? (
+                      <input
+                        autoFocus
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        onBlur={commitEdit}
+                        onKeyDown={(e) => e.key === "Enter" && commitEdit()}
+                        className="w-full rounded-full border border-angel-pink-200 bg-white px-2.5 py-0.5 text-sm"
+                      />
+                    ) : (
+                      <button onClick={() => startEdit(s)} className="block min-w-0 max-w-full truncate text-left text-sm font-bold text-[#5b4a52]">
+                        {s.name}
+                      </button>
+                    )}
+                  </div>
                   <p className="text-[11px] text-[#cdb8c4]">{new Date(s.createdAt).toLocaleDateString("ko-KR")}</p>
                 </div>
 

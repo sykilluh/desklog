@@ -12,12 +12,23 @@ import {
   playCompleteSound,
 } from "@/lib/sfx";
 
+/** Real product-photo icons instead of emoji — emoji render wildly
+ * differently across platforms and read as flat/cheap; these small PNGs
+ * (cropped + resized down to ~220px) give the step buttons, floating tool,
+ * and tap particles a consistent, nicer look. */
+const ICONS = {
+  bean: "/cafe-icons/bean.png",
+  leaf: "/cafe-icons/leaf.png",
+  ice: "/cafe-icons/ice.png",
+  drop: "/cafe-icons/drop.png",
+  cream: "/cafe-icons/cream.png",
+} as const;
+type IconKey = keyof typeof ICONS;
+
 interface CraftStep {
   key: "grind" | "steep" | "whisk" | "ice" | "pour" | "cream";
   label: string;
-  emoji: string;
-  toolEmoji: string;
-  particle: string;
+  icon: IconKey;
   /** Number of taps/cranks needed to finish this step — turns a one-click
    * "done" into a tiny repeated-action mini-game (crank the grinder, drop
    * cubes in one at a time, etc), closer to the reference clips. */
@@ -29,10 +40,15 @@ interface CraftStep {
 
 interface Particle {
   id: number;
-  emoji: string;
+  icon: IconKey;
   left: number;
   rotate: number;
   delay: number;
+}
+
+function StepIcon({ icon, className, style }: { icon: IconKey; className?: string; style?: React.CSSProperties }) {
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={ICONS[icon]} alt="" className={className} style={{ ...style, filter: "drop-shadow(0 2px 3px rgba(0,0,0,0.25))" }} />;
 }
 
 const GRIND_DRINK_IDS = new Set(["iceAmericano", "vanillaLatte"]);
@@ -49,20 +65,20 @@ const CREAM_DRINK_IDS = new Set(["vanillaLatte", "milkTea", "matcha"]);
 function stepsFor(drink: DrinkOption): CraftStep[] {
   const steps: CraftStep[] = [];
   if (GRIND_DRINK_IDS.has(drink.id)) {
-    steps.push({ key: "grind", label: "원두 갈기", emoji: "☕", toolEmoji: "⚙️", particle: "🟤", taps: 6, tick: playGrindCrankTick });
+    steps.push({ key: "grind", label: "원두 갈기", icon: "bean", taps: 6, tick: playGrindCrankTick });
   }
   if (STEEP_DRINK_IDS.has(drink.id)) {
-    steps.push({ key: "steep", label: "찻잎 우리기", emoji: "🍵", toolEmoji: "🍃", particle: "🍃", taps: 3, tick: playSteepDunkTick });
+    steps.push({ key: "steep", label: "찻잎 우리기", icon: "leaf", taps: 3, tick: playSteepDunkTick });
   }
   if (WHISK_DRINK_IDS.has(drink.id)) {
-    steps.push({ key: "whisk", label: "말차 가루 풀기", emoji: "🍵", toolEmoji: "🥢", particle: "🌿", taps: 6, tick: playWhiskStrokeTick });
+    steps.push({ key: "whisk", label: "말차 가루 풀기", icon: "leaf", taps: 6, tick: playWhiskStrokeTick });
   }
   if (ICE_DRINK_IDS.has(drink.id)) {
-    steps.push({ key: "ice", label: "얼음 넣기", emoji: "🧊", toolEmoji: "🧊", particle: "🧊", taps: 4, tick: playIceDropTick });
+    steps.push({ key: "ice", label: "얼음 넣기", icon: "ice", taps: 4, tick: playIceDropTick });
   }
-  steps.push({ key: "pour", label: "음료 붓기", emoji: "🥤", toolEmoji: "🫗", particle: "💧", taps: 4, tick: playPourGlugTick });
+  steps.push({ key: "pour", label: "음료 붓기", icon: "drop", taps: 4, tick: playPourGlugTick });
   if (CREAM_DRINK_IDS.has(drink.id)) {
-    steps.push({ key: "cream", label: "휘핑크림 올리기", emoji: "🍦", toolEmoji: "🍦", particle: "☁️", taps: 3, tick: playCreamPuffTick });
+    steps.push({ key: "cream", label: "휘핑크림 올리기", icon: "cream", taps: 3, tick: playCreamPuffTick });
   }
   return steps;
 }
@@ -93,10 +109,10 @@ export default function CafeCorner({ onComplete }: { onComplete: (drinkId: strin
     setParticles([]);
   }
 
-  function spawnParticles(emoji: string, count = 4) {
+  function spawnParticles(icon: IconKey, count = 4) {
     const burst: Particle[] = Array.from({ length: count }, () => ({
       id: particleIdRef.current++,
-      emoji,
+      icon,
       left: 30 + Math.random() * 40,
       rotate: Math.random() * 80 - 40,
       delay: Math.random() * 0.15,
@@ -113,7 +129,7 @@ export default function CafeCorner({ onComplete }: { onComplete: (drinkId: strin
     if (current >= step.taps) return;
 
     step.tick(current);
-    spawnParticles(step.particle, current === step.taps - 1 ? 7 : 3);
+    spawnParticles(step.icon, current === step.taps - 1 ? 7 : 3);
     setWobble((w) => w + 1);
 
     const nextCount = current + 1;
@@ -204,24 +220,24 @@ export default function CafeCorner({ onComplete }: { onComplete: (drinkId: strin
         {nextStep && (
           <div
             key={`${nextStep.key}-${wobble}`}
-            className="tool-flick pointer-events-none absolute right-2 top-2 text-3xl"
+            className="tool-flick pointer-events-none absolute right-2 top-2"
             style={{ "--turn": `${nextCount * 47}deg` } as React.CSSProperties}
           >
-            {nextStep.toolEmoji}
+            <StepIcon icon={nextStep.icon} className="h-9 w-9 object-contain" />
           </div>
         )}
 
         {particles.map((p) => (
           <span
             key={p.id}
-            className="craft-particle pointer-events-none absolute top-0 text-2xl"
+            className="craft-particle pointer-events-none absolute top-0"
             style={{
               left: `${p.left}%`,
               animationDelay: `${p.delay}s`,
               "--rot": `${p.rotate}deg`,
             } as React.CSSProperties}
           >
-            {p.emoji}
+            <StepIcon icon={p.icon} className="h-6 w-6 object-contain" />
           </span>
         ))}
         {allDone && (
@@ -337,8 +353,9 @@ export default function CafeCorner({ onComplete }: { onComplete: (drinkId: strin
                   style={{ width: `${progressPct}%` }}
                 />
               )}
-              <span className="relative">
-                {step.emoji} {step.label} {done ? "✓" : locked ? "🔒" : isNext ? `${count}/${step.taps}` : ""}
+              <span className="relative flex items-center gap-1.5">
+                <StepIcon icon={step.icon} className={`h-4 w-4 object-contain ${locked ? "opacity-50" : ""}`} />
+                {step.label} {done ? "✓" : locked ? "🔒" : isNext ? `${count}/${step.taps}` : ""}
               </span>
             </button>
           );

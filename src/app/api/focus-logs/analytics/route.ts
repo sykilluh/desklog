@@ -1,13 +1,14 @@
 import { NextRequest } from "next/server";
 import { sendOk, sendError, ServiceError } from "@/lib/response";
-import { listFocusSessions, createFocusSession } from "@/lib/services/focusSessionService";
+import { getFocusAnalytics, setDailyGoalMinutes } from "@/lib/services/focusService";
 import { getCurrentUserId } from "@/lib/services/userService";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const userId = await getCurrentUserId();
-    const sessions = await listFocusSessions(userId);
-    return sendOk(sessions, "기록 조회 완료");
+    const period = req.nextUrl.searchParams.get("period") === "monthly" ? 30 : 7;
+    const analytics = await getFocusAnalytics(userId, period);
+    return sendOk(analytics, "집중 분석 조회 완료");
   } catch (err) {
     if (err instanceof ServiceError) return sendError(err.message, err.status);
     console.error(err);
@@ -15,12 +16,12 @@ export async function GET() {
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function PATCH(req: NextRequest) {
   try {
     const userId = await getCurrentUserId();
     const body = await req.json();
-    const session = await createFocusSession(userId, body.name, body.mode, body.preset);
-    return sendOk(session, "새 기록 생성 완료");
+    const goalMinutes = await setDailyGoalMinutes(userId, body.goalMinutes);
+    return sendOk({ goalMinutes }, "목표 시간 수정 완료");
   } catch (err) {
     if (err instanceof ServiceError) return sendError(err.message, err.status);
     console.error(err);
