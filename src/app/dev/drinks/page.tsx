@@ -16,10 +16,10 @@ export default function DrinkVisualPreviewPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#fdf6f0] p-8 text-[#5b4a52]">
+    <main className="min-h-screen bg-[#f2f2f0] p-8 text-[#3a332e]">
       <div className="mx-auto max-w-2xl">
         <h1 className="mb-1 text-2xl font-bold">🥤 음료 비주얼 미리보기</h1>
-        <p className="mb-6 text-sm text-[#a8889a]">
+        <p className="mb-6 text-sm text-[#837a82]">
           항목을 누르면 그 음료 하나만 크게 보여줍니다.
         </p>
 
@@ -32,7 +32,7 @@ export default function DrinkVisualPreviewPage() {
               className={`rounded-full border-2 px-4 py-2 text-sm font-bold transition ${
                 activeId === d.id
                   ? "border-angel-pink-300 bg-gradient-to-r from-angel-pink-300 to-strawberry-milk-300 text-white shadow"
-                  : "border-angel-pink-100 bg-white text-[#5b4a52]"
+                  : "border-angel-pink-100 bg-white text-[#3a332e]"
               }`}
             >
               {d.label}
@@ -67,7 +67,7 @@ export default function DrinkVisualPreviewPage() {
             />
           </div>
           <p className="text-base font-bold">{active.label}</p>
-          <code className="text-[10px] text-[#a8889a]">{active.photo}</code>
+          <code className="text-[10px] text-[#837a82]">{active.photo}</code>
           <button
             onClick={() => select(active.id)}
             className="rounded-full bg-gradient-to-r from-angel-pink-300 to-strawberry-milk-300 px-4 py-1.5 text-xs font-bold text-white shadow"
@@ -76,7 +76,7 @@ export default function DrinkVisualPreviewPage() {
           </button>
         </div>
 
-        <p className="mt-8 text-xs text-[#a8889a]">
+        <p className="mt-8 text-xs text-[#837a82]">
           사진을 쓰려면 <code>public/drinks/</code> 폴더에 위 경로와 같은 파일명으로 이미지를 넣어주세요.
           파일이 없으면 자동으로 그려진 SVG 컵으로 표시됩니다.
         </p>

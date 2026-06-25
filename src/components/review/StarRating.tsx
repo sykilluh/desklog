@@ -17,7 +17,7 @@ function Star({ filled, size, onClick, onHover }: { filled: boolean; size: numbe
         <linearGradient id="starGradient" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#ffd1e6" />
           <stop offset="50%" stopColor="#ff9fc4" />
-          <stop offset="100%" stopColor="#ff6fa5" />
+          <stop offset="100%" stopColor="#d2658f" />
         </linearGradient>
       </defs>
       <path

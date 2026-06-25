@@ -3,32 +3,103 @@
 @tailwind utilities;
 
 :root {
-  --background: #fff5f8;
-  --foreground: #5b4a52;
+  --background: #fafafa;
+  --foreground: #232023;
 }
 
 html {
-  font-size: 18px;
+  font-size: 17px;
 }
 
 body {
   color: var(--foreground);
-  background: linear-gradient(135deg, #fff0f6 0%, #f0fbff 35%, #f1fff7 65%, #fff6f0 100%);
+  background: #fafafa;
   font-family: var(--font-noto), sans-serif;
   min-height: 100vh;
   padding-bottom: 6rem;
+  letter-spacing: -0.01em;
 }
 
 h1 {
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .font-title {
   font-family: var(--font-title), var(--font-noto), sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Loose, scrawled label font — Korean falls back to a pen-script face, Latin
+   characters in the same string pick up Caveat automatically since both are
+   listed and the browser picks per-glyph. Used for stickers/tags/captions,
+   never for body copy or anything that needs to stay legible at small size. */
+.font-hand {
+  font-family: var(--font-hand-en), var(--font-hand-kr), cursive;
+  letter-spacing: 0.01em;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* A card that looks hand-placed rather than grid-snapped — pair with a
+     hover lift for things meant to feel touchable (CD cases, polaroids). */
+  .tilt-sticker {
+    transform: rotate(var(--tilt, -2deg));
+  }
+
+  .hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-4px) rotate(0deg);
+    box-shadow: 0 16px 28px rgba(40, 32, 28, 0.16);
+  }
+
+  .press-pop {
+    transition: transform 0.15s ease;
+  }
+  .press-pop:active {
+    transform: scale(0.96);
+  }
+
+  /* Transparent glass button with a soft holographic glow instead of a flat
+     fill — used for the floating bar's play controls so they read as light
+     sources rather than buttons. Glow color is set per-instance via
+     --glow-a/--glow-b; pulses gently while the thing it controls is active. */
+  .glow-button {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow:
+      0 0 0 1px rgba(40, 32, 28, 0.04),
+      0 0 10px 1px var(--glow-a, rgba(255, 179, 203, 0.45)),
+      0 0 18px 5px var(--glow-b, rgba(168, 213, 255, 0.3));
+    transition: box-shadow 0.25s ease, transform 0.15s ease;
+  }
+  .glow-button:hover {
+    box-shadow:
+      0 0 0 1px rgba(40, 32, 28, 0.06),
+      0 0 14px 3px var(--glow-a, rgba(255, 179, 203, 0.6)),
+      0 0 22px 7px var(--glow-b, rgba(168, 213, 255, 0.45));
+  }
+  .glow-button.is-active {
+    animation: glow-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes glow-pulse {
+    0%,
+    100% {
+      box-shadow:
+        0 0 0 1px rgba(40, 32, 28, 0.04),
+        0 0 10px 1px var(--glow-a, rgba(255, 179, 203, 0.45)),
+        0 0 18px 5px var(--glow-b, rgba(168, 213, 255, 0.3));
+    }
+    50% {
+      box-shadow:
+        0 0 0 1px rgba(40, 32, 28, 0.04),
+        0 0 16px 4px var(--glow-a, rgba(255, 179, 203, 0.75)),
+        0 0 26px 9px var(--glow-b, rgba(168, 213, 255, 0.55));
+    }
   }
 }

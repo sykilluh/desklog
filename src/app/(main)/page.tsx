@@ -7,8 +7,6 @@ import { DndContext, PointerSensor, useSensor, useSensors, type DragEndEvent } f
 import ObjectInventory from "@/components/desk/ObjectInventory";
 import DeskCanvas, { DESK_CANVAS_ID } from "@/components/desk/DeskCanvas";
 import FocusTimer from "@/components/timer/FocusTimer";
-import FocusRecordsPanel from "@/components/timer/FocusRecordsPanel";
-import FocusAnalyticsPanel from "@/components/timer/FocusAnalyticsPanel";
 import TodayRecommendMenu from "@/components/timer/TodayRecommendMenu";
 import VisualFeedback from "@/components/timer/VisualFeedback";
 import YoutubeMixer from "@/components/audio/YoutubeMixer";
@@ -241,51 +239,63 @@ export default function MainPage() {
   }
 
   return (
-    <main className="min-h-screen p-6 text-[#5b4a52] sm:p-8">
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-title text-4xl text-[#ff6fa5] drop-shadow-sm">🩷 데스크로그 · 나만의 데스크</h1>
-        <div className="flex flex-wrap items-center gap-3">
+    <main className="min-h-screen p-6 text-[#3a332e] sm:p-8">
+      <div className="mb-10 flex flex-wrap items-end justify-between gap-4 border-b border-[#e3e2de] pb-6">
+        <h1 className="font-title text-3xl text-[#3a332e]">데스크로그</h1>
+        <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/cafe"
-            className="flex items-center gap-1.5 rounded-2xl border-2 border-angel-pink-200 bg-white px-6 py-3 text-lg font-bold text-[#5b4a52] shadow-sm shadow-angel-pink-200/40 transition hover:scale-105 hover:bg-angel-pink-50"
+            className="rounded-full border border-[#e3e2de] bg-white px-5 py-2 text-sm font-semibold text-[#5c5650] transition hover:border-angel-pink-300 hover:text-[#3a332e]"
           >
-            🧋 카페
+            카페
+          </Link>
+          <button
+            onClick={() => setShowRecommendMenu(true)}
+            className="rounded-full bg-angel-pink-200 px-5 py-2 text-sm font-semibold text-[#7a3c54] shadow-sm transition hover:bg-angel-pink-300"
+          >
+            오늘의 추천 메뉴
+          </button>
+          <Link
+            href="/diary"
+            className="rounded-full border border-[#e3e2de] bg-white px-5 py-2 text-sm font-semibold text-[#5c5650] transition hover:border-angel-pink-300 hover:text-[#3a332e]"
+          >
+            다이어리
           </Link>
           <Link
             href="/challenge"
-            className="flex items-center gap-1.5 rounded-2xl border-2 border-mint-200 bg-white px-6 py-3 text-lg font-bold text-[#5b4a52] shadow-sm shadow-mint-200/40 transition hover:scale-105 hover:bg-mint-50"
+            className="rounded-full border border-[#e3e2de] bg-white px-5 py-2 text-sm font-semibold text-[#5c5650] transition hover:border-mint-300 hover:text-[#3a332e]"
           >
-            📖 챌린지
+            챌린지
           </Link>
           <Link
             href="/plant"
-            className="flex items-center gap-1.5 rounded-2xl border-2 border-mint-200 bg-white px-6 py-3 text-lg font-bold text-[#5b4a52] shadow-sm shadow-mint-200/40 transition hover:scale-105 hover:bg-mint-50"
+            className="rounded-full border border-[#e3e2de] bg-white px-5 py-2 text-sm font-semibold text-[#5c5650] transition hover:border-mint-300 hover:text-[#3a332e]"
           >
-            🌱 식물
+            식물
           </Link>
           <Link
             href="/asmr"
-            className="flex items-center gap-1.5 rounded-2xl border-2 border-sky-blue-200 bg-white px-6 py-3 text-lg font-bold text-[#5b4a52] shadow-sm shadow-sky-blue-200/40 transition hover:scale-105 hover:bg-sky-blue-50"
+            className="rounded-full border border-[#e3e2de] bg-white px-5 py-2 text-sm font-semibold text-[#5c5650] transition hover:border-sky-blue-300 hover:text-[#3a332e]"
           >
-            🌈 오늘의 ASMR
+            오늘의 ASMR
           </Link>
           <Link
             href="/reviews"
-            className="flex items-center gap-1.5 rounded-2xl border-2 border-angel-pink-200 bg-white px-6 py-3 text-lg font-bold text-[#5b4a52] shadow-sm shadow-angel-pink-200/40 transition hover:scale-105 hover:bg-angel-pink-50"
+            className="rounded-full border border-[#e3e2de] bg-white px-5 py-2 text-sm font-semibold text-[#5c5650] transition hover:border-angel-pink-300 hover:text-[#3a332e]"
           >
-            ⭐ 후기
+            후기
           </Link>
           <Link
             href="/archive"
-            className="flex items-center gap-1.5 rounded-2xl border-2 border-sky-blue-200 bg-white px-6 py-3 text-lg font-bold text-[#5b4a52] shadow-sm shadow-sky-blue-200/40 transition hover:scale-105 hover:bg-sky-blue-50"
+            className="rounded-full border border-[#e3e2de] bg-white px-5 py-2 text-sm font-semibold text-[#5c5650] transition hover:border-sky-blue-300 hover:text-[#3a332e]"
           >
-            🎀 공유 카드
+            공유 로그
           </Link>
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="flex items-center gap-1.5 rounded-2xl border-2 border-strawberry-milk-200 bg-white px-6 py-3 text-lg font-bold text-[#5b4a52] shadow-sm shadow-strawberry-milk-200/40 transition hover:scale-105 hover:bg-strawberry-milk-50"
+            className="rounded-full px-5 py-2 text-sm font-semibold text-[#9c948b] transition hover:text-[#3a332e]"
           >
-            🚪 로그아웃
+            로그아웃
           </button>
         </div>
       </div>
@@ -293,23 +303,27 @@ export default function MainPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
         <div>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm text-[#a8889a]">
+            <p className="text-sm text-[#837a82]">
               {editMode ? "✏️ 편집 모드: 자유롭게 끌어서 배치하고, 모서리 핸들로 크기를 조절하세요." : "오브제를 클릭해보세요. 배치를 바꾸려면 편집 모드를 켜주세요."}
             </p>
             <div className="flex items-center gap-2">
             <div className="relative">
               <button
                 onClick={() => setShowBackgroundPicker((prev) => !prev)}
-                className="shrink-0 rounded-2xl border-2 border-sky-blue-200 bg-white px-5 py-2.5 text-base font-bold text-[#5b4a52] shadow-sm shadow-sky-blue-200/30 transition hover:scale-105"
+                className="press-pop flex shrink-0 items-center gap-1.5 rounded-full border border-[#e3e2de] bg-white px-4 py-2 text-sm font-semibold text-[#3a332e] transition hover:border-sky-blue-300"
               >
-                {currentBackground.emoji} 데스크매트
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                  <rect x="1.5" y="1.5" width="13" height="13" rx="3" stroke="currentColor" strokeWidth="1.4" />
+                  <path d="M1.5 10.5l3.5-3.5 2.5 2.5 4-4 3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                </svg>
+                데스크매트
               </button>
               {showBackgroundPicker && (
                 <div
                   onPointerDown={(e) => e.stopPropagation()}
-                  className="absolute right-0 top-full z-40 mt-2 w-56 rounded-2xl border-2 border-sky-blue-100 bg-white p-2 shadow-xl"
+                  className="hover-lift absolute right-0 top-full z-40 mt-2 w-56 rounded-md border-2 border-[#e3e2de] bg-white p-2 shadow-xl"
                 >
-                  <p className="mb-1 px-1 text-[11px] font-bold text-[#a8889a]">데스크매트 고르기</p>
+                  <p className="mb-1 px-1 text-[11px] font-bold text-[#837a82]">데스크매트 고르기</p>
                   <div className="flex flex-col gap-1">
                     {DESK_BACKGROUND_OPTIONS.map((bg) => (
                       <button
@@ -323,7 +337,7 @@ export default function MainPage() {
                         }`}
                       >
                         <span className={`h-5 w-5 rounded-full border border-black/10 ${bg.className}`} />
-                        {bg.emoji} {bg.label}
+                        {bg.label}
                       </button>
                     ))}
                     <button
@@ -342,7 +356,7 @@ export default function MainPage() {
                       ) : (
                         <span className="h-5 w-5 rounded-full border border-black/10 bg-gradient-to-br from-angel-pink-100 to-sky-blue-100" />
                       )}
-                      🖼️ 내 사진 추가하기
+                      내 사진 추가하기
                     </button>
                   </div>
                   <input
@@ -360,13 +374,20 @@ export default function MainPage() {
             </div>
             <button
               onClick={() => setEditMode((prev) => !prev)}
-              className={`shrink-0 rounded-2xl border-2 px-5 py-2.5 text-base font-bold shadow-sm transition hover:scale-105 ${
-                editMode
-                  ? "border-angel-pink-300 bg-gradient-to-r from-angel-pink-300 to-strawberry-milk-300 text-white shadow-angel-pink-300/40"
-                  : "border-angel-pink-200 bg-white text-[#5b4a52] shadow-angel-pink-200/30"
+              className={`press-pop flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                editMode ? "border-ink-600 bg-ink-600 text-white" : "border-[#e3e2de] bg-white text-[#3a332e] hover:border-angel-pink-300"
               }`}
             >
-              {editMode ? "✅ 데스크 편집 종료" : "✏️ 데스크 편집"}
+              {editMode ? (
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <path d="M3.5 8.5l3 3 6-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <path d="M11 2.5l2.5 2.5-8 8H3v-2.5l8-8z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" fill="none" />
+                </svg>
+              )}
+              {editMode ? "편집 종료" : "데스크 편집"}
             </button>
             </div>
           </div>
@@ -382,7 +403,7 @@ export default function MainPage() {
 
             <div className={editMode ? "mt-6" : ""}>
               {isLoading ? (
-                <p className="text-[#a8889a]">불러오는 중...</p>
+                <p className="text-[#837a82]">불러오는 중...</p>
               ) : (
                 <DeskCanvas
                   objects={objects}
@@ -439,8 +460,6 @@ export default function MainPage() {
             onSeekBoost={handleSeekBoost}
           />
           <FocusTimer />
-          <FocusAnalyticsPanel />
-          <FocusRecordsPanel onOpenRecommend={() => setShowRecommendMenu(true)} />
           <VisualFeedback todayFocusSeconds={todayFocusSeconds} progressRate={progressRate} />
         </div>
       </div>

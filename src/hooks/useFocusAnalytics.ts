@@ -13,6 +13,13 @@ export interface FocusAnalyticsDTO {
   goalMetDays: number;
   periodDays: number;
   streakDays: number;
+  weeklyMedals: Array<{
+    weekStart: string;
+    weekEnd: string;
+    medal: "gold" | "silver" | "bronze" | null;
+    achievementRate: number;
+    totalSeconds: number;
+  }>;
 }
 
 export function useFocusAnalytics(period: AnalyticsPeriod) {

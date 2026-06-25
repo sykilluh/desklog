@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Noto_Sans_KR, Jua } from "next/font/google";
+import { Noto_Sans_KR, Noto_Serif_KR, Gaegu, Caveat } from "next/font/google";
 import AuthSessionProvider from "@/components/providers/AuthSessionProvider";
 import PlaylistProvider from "@/components/providers/PlaylistProvider";
 import AsmrPlayerProvider from "@/components/providers/AsmrPlayerProvider";
@@ -14,10 +14,24 @@ const notoSansKr = Noto_Sans_KR({
   display: "swap",
 });
 
-const jua = Jua({
+const notoSerifKr = Noto_Serif_KR({
   subsets: ["latin"],
-  weight: "400",
+  weight: ["600", "700"],
   variable: "--font-title",
+  display: "swap",
+});
+
+const gaegu = Gaegu({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-hand-kr",
+  display: "swap",
+});
+
+const caveat = Caveat({
+  subsets: ["latin"],
+  weight: ["500", "700"],
+  variable: "--font-hand-en",
   display: "swap",
 });
 
@@ -33,7 +47,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className={`${notoSansKr.variable} ${jua.variable} antialiased`}>
+      <body className={`${notoSansKr.variable} ${notoSerifKr.variable} ${gaegu.variable} ${caveat.variable} antialiased`}>
         <AuthSessionProvider>
           <PlaylistProvider>
             <AsmrPlayerProvider>

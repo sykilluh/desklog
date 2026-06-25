@@ -60,61 +60,67 @@ export default function AsmrPage() {
   }
 
   return (
-    <main className="min-h-screen p-6 text-[#5b4a52] sm:p-8">
-      <Link href="/" className="mb-4 inline-block text-sm text-[#a8889a]">
+    <main className="min-h-screen p-6 text-[#3a332e] sm:p-8">
+      <Link href="/" className="mb-4 inline-block text-sm text-[#837a82] hover:text-[#3a332e]">
         ← 데스크로 돌아가기
       </Link>
-      <h1 className="font-title mb-6 text-3xl text-[#3a8fb8]">🌈 오늘의 날씨 ASMR</h1>
+      <p className="text-[11px] uppercase tracking-[0.2em] text-[#9c948b]">Weather Sounds</p>
+      <h1 className="font-title mb-6 text-3xl text-[#3a332e]">오늘의 날씨 ASMR</h1>
 
       <div className="mx-auto max-w-2xl space-y-6">
         {recommended ? (
-          <div className="rounded-3xl border-2 border-white/70 bg-gradient-to-br from-sky-blue-100 to-mint-100 p-8 text-center shadow-md shadow-sky-blue-200/40">
-            <p className="text-sm text-[#3a8fb8]">
+          <div className="relative rounded-sm border border-[#e3e2de] bg-[#ffffff] p-8 text-center shadow-[0_18px_36px_rgba(40,32,28,0.12)]">
+            <span className="font-hand absolute -left-3 -top-3 -rotate-6 rounded-full bg-sky-blue-400 px-3 py-1 text-sm text-white shadow-sm">
+              Today's Pick
+            </span>
+            <p className="text-sm text-[#5c8a9c]">
               지금 날씨: {describeWeatherCode(weather!.code)} · {Math.round(weather!.temperature)}°C
             </p>
             <p className="mt-3 text-7xl">{recommended.emoji}</p>
-            <p className="mt-2 text-2xl font-bold text-[#3a6e58]">{recommended.label} 추천!</p>
+            <p className="font-hand mt-2 text-3xl text-[#3f6f43]">{recommended.label} 추천!</p>
             <button
               onClick={() => handlePlayPreset(recommended)}
-              className="mt-5 inline-block rounded-full bg-gradient-to-r from-sky-blue-300 to-mint-300 px-6 py-3 text-base font-bold text-white shadow"
+              className="press-pop mt-5 inline-block rounded-full bg-ink-600 px-6 py-3 text-base font-bold text-white shadow-sm"
             >
-              {isPresetPlaying(recommended) ? "⏸ 일시정지" : "▶ 바로 재생"}
+              {isPresetPlaying(recommended) ? "일시정지" : "바로 재생"}
             </button>
-            <p className="mt-3 text-xs text-[#8fb0c4]">
+            <p className="mt-3 text-xs text-[#7c93a0]">
               음악과 동시에 재생되는 별도 채널이라, 페이지를 옮겨도 계속 들려요.
             </p>
           </div>
         ) : (
-          <p className="text-center text-[#a8889a]">{error || "날씨 확인 중..."}</p>
+          <p className="text-center text-[#837a82]">{error || "날씨 확인 중..."}</p>
         )}
 
-        <div className="rounded-3xl border-2 border-white/70 bg-white/80 p-6 shadow-md shadow-angel-pink-100/40 backdrop-blur">
-          <p className="mb-4 text-lg font-bold text-[#ff6fa5]">직접 골라서 듣기</p>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {ASMR_PRESETS.map((preset) => (
-              <button
-                key={preset.id}
-                onClick={() => handlePlayPreset(preset)}
-                className={`flex flex-col items-center gap-1 rounded-2xl border-2 px-3 py-4 text-center shadow-sm transition hover:scale-105 ${
-                  isPresetPlaying(preset)
-                    ? "border-sky-blue-300 bg-sky-blue-50"
-                    : "border-angel-pink-100 bg-white hover:bg-angel-pink-50"
-                }`}
-              >
-                <span className="text-3xl">{preset.emoji}</span>
-                <span className="text-sm font-bold">{preset.label}</span>
-                <span className="text-xs text-[#a8889a]">{isPresetPlaying(preset) ? "⏸ 재생 중" : "▶ 재생"}</span>
-              </button>
-            ))}
+        <div className="rounded-2xl border border-[#e3e2de] bg-white p-6 shadow-sm">
+          <p className="font-hand mb-4 text-2xl text-[#3a332e]">직접 골라서 듣기</p>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            {ASMR_PRESETS.map((preset, i) => {
+              const playing = isPresetPlaying(preset);
+              return (
+                <button
+                  key={preset.id}
+                  onClick={() => handlePlayPreset(preset)}
+                  style={{ "--tilt": i % 2 === 0 ? "-2deg" : "2deg" } as React.CSSProperties}
+                  className={`tilt-sticker hover-lift press-pop flex flex-col items-center gap-1 rounded-md border-2 px-3 py-4 text-center shadow-md ${
+                    playing ? "border-sky-blue-400 bg-sky-blue-50" : "border-white bg-white"
+                  }`}
+                >
+                  <span className="text-3xl">{preset.emoji}</span>
+                  <span className="font-hand text-lg text-[#3a332e]">{preset.label}</span>
+                  <span className="text-xs text-[#837a82]">{playing ? "재생 중" : "재생"}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {asmr.currentVideoId && (
           <button
             onClick={asmr.isPlaying ? asmr.pause : asmr.play}
-            className="w-full rounded-full bg-gradient-to-r from-angel-pink-300 to-strawberry-milk-300 px-6 py-3 text-base font-bold text-white shadow"
+            className="press-pop w-full rounded-full bg-angel-pink-200 px-6 py-3 text-base font-bold text-[#7a3c54] shadow-sm transition hover:bg-angel-pink-300"
           >
-            {asmr.isPlaying ? "⏸ ASMR 일시정지" : "▶ ASMR 다시 재생"}
+            {asmr.isPlaying ? "ASMR 일시정지" : "ASMR 다시 재생"}
           </button>
         )}
       </div>

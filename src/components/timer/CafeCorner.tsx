@@ -149,16 +149,17 @@ export default function CafeCorner({ onComplete }: { onComplete: (drinkId: strin
   if (!selected) {
     return (
       <>
-        <p className="mb-4 text-sm text-[#a8889a]">오늘 공부할 때 마실 음료를 메뉴판에서 골라주세요.</p>
-        <div className="grid grid-cols-2 gap-3">
-          {DRINK_OPTIONS.map((d) => (
+        <p className="font-hand mb-4 text-lg text-[#837a82]">오늘 마실 음료를 메뉴판에서 골라주세요</p>
+        <div className="grid grid-cols-2 gap-4">
+          {DRINK_OPTIONS.map((d, i) => (
             <button
               key={d.id}
               onClick={() => selectDrink(d)}
-              className="flex flex-col items-center gap-2 rounded-2xl border-2 border-white bg-white/80 p-3 shadow-sm transition hover:-translate-y-0.5 hover:scale-105 hover:border-angel-pink-300 hover:shadow-md"
+              style={{ "--tilt": i % 2 === 0 ? "-2deg" : "2deg" } as React.CSSProperties}
+              className="tilt-sticker hover-lift press-pop flex flex-col items-center gap-2 rounded-md border-2 border-white bg-white p-3 shadow-md"
             >
               <MugIcon size={64} cupFill={d.cupFill} cupStroke={d.cupStroke} liquidFill={d.liquidFill} liquidStroke={d.liquidStroke} variantId={d.id} photo={d.photo} />
-              <span className="rounded-full bg-angel-pink-50 px-2 py-0.5 text-xs font-bold text-[#5b4a52]">{d.label}</span>
+              <span className="font-hand text-base text-[#3a332e]">{d.label}</span>
             </button>
           ))}
         </div>
@@ -183,7 +184,7 @@ export default function CafeCorner({ onComplete }: { onComplete: (drinkId: strin
                     ? "bg-mint-300 text-white"
                     : isNext
                     ? "animate-pulse bg-angel-pink-300 text-white"
-                    : "bg-white/70 text-[#cdb8c4]"
+                    : "bg-white/70 text-[#b3a8ad]"
                 }`}
               >
                 {done ? "✓" : i + 1}
@@ -321,7 +322,7 @@ export default function CafeCorner({ onComplete }: { onComplete: (drinkId: strin
           }
         }
       `}</style>
-      <p className="rounded-full bg-white/80 px-3 py-1 text-sm font-bold text-[#5b4a52] shadow-sm">
+      <p className="rounded-full bg-white/80 px-3 py-1 text-sm font-bold text-[#3a332e] shadow-sm">
         {allDone ? `🎉 ${selected.label} 완성!` : `🧾 주문서 · ${selected.label}`}
       </p>
 
@@ -340,10 +341,10 @@ export default function CafeCorner({ onComplete }: { onComplete: (drinkId: strin
               title={locked ? "이전 단계를 먼저 끝내주세요" : `${step.taps - count}번 더 눌러주세요`}
               className={`relative overflow-hidden rounded-full border-2 px-4 py-2 text-sm font-bold transition active:scale-95 ${
                 done
-                  ? "border-mint-200 bg-mint-100 text-[#3a6e58]"
+                  ? "border-mint-200 bg-mint-100 text-[#3f6f43]"
                   : isNext
-                  ? "scale-105 border-angel-pink-300 bg-white text-[#5b4a52] shadow-md hover:bg-angel-pink-50"
-                  : "border-angel-pink-100 bg-white/40 text-[#cdb8c4] opacity-50"
+                  ? "scale-105 border-angel-pink-300 bg-white text-[#3a332e] shadow-md hover:bg-angel-pink-50"
+                  : "border-angel-pink-100 bg-white/40 text-[#b3a8ad] opacity-50"
               }`}
             >
               {/* fill bar showing crank/tap progress toward this step's goal */}
@@ -365,16 +366,16 @@ export default function CafeCorner({ onComplete }: { onComplete: (drinkId: strin
       <div className="flex gap-2">
         <button
           onClick={() => setSelected(null)}
-          className="rounded-full bg-angel-pink-50 px-4 py-2 text-sm font-bold text-[#a8889a]"
+          className="press-pop rounded-full border border-[#e3e2de] bg-white px-4 py-2 text-sm font-bold text-[#837a82]"
         >
           ← 다시 고르기
         </button>
         <button
           onClick={() => allDone && onComplete(selected.id)}
           disabled={!allDone}
-          className="rounded-full bg-gradient-to-r from-angel-pink-300 to-strawberry-milk-300 px-5 py-2 text-sm font-bold text-white shadow transition disabled:opacity-40 enabled:hover:scale-105 enabled:animate-pulse"
+          className="press-pop rounded-full bg-ink-600 px-5 py-2 text-sm font-bold text-white shadow-sm transition disabled:opacity-40 enabled:animate-pulse"
         >
-          ✨ 이 음료로 공부 시작하기
+          이 음료로 공부 시작하기
         </button>
       </div>
     </div>

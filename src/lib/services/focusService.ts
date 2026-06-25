@@ -99,15 +99,53 @@ function computeStreakDays(daily: Array<{ date: string; seconds: number }>) {
   return streak;
 }
 
+function medalTierFromRate(rate: number): "gold" | "silver" | "bronze" | null {
+  if (rate >= 90) return "gold";
+  if (rate >= 70) return "silver";
+  if (rate >= 50) return "bronze";
+  return null;
+}
+
+/** Splits `daily` (oldest-first) into 7-day chunks and awards a medal per
+ * week based on how many days hit the goal that week — gold/silver/bronze
+ * thresholds at 90/70/50% goal-achievement. */
+function computeWeeklyMedals(daily: Array<{ date: string; seconds: number }>, goalSeconds: number) {
+  const weeks: Array<{
+    weekStart: string;
+    weekEnd: string;
+    medal: "gold" | "silver" | "bronze" | null;
+    achievementRate: number;
+    totalSeconds: number;
+  }> = [];
+
+  for (let i = 0; i < daily.length; i += 7) {
+    const chunk = daily.slice(i, i + 7);
+    if (!chunk.length) continue;
+    const totalSeconds = chunk.reduce((sum, d) => sum + d.seconds, 0);
+    const goalMetDays = chunk.filter((d) => d.seconds >= goalSeconds).length;
+    const achievementRate = Math.round((goalMetDays / chunk.length) * 100);
+    weeks.push({
+      weekStart: chunk[0].date,
+      weekEnd: chunk[chunk.length - 1].date,
+      medal: medalTierFromRate(achievementRate),
+      achievementRate,
+      totalSeconds,
+    });
+  }
+
+  return weeks;
+}
+
 /** Weekly/monthly rollup for the analytics panel — average seconds/day over
  * the period, % of days meeting the daily goal, and the current
  * consecutive-day streak (looked back further than the period itself, so a
- * 7-day weekly view doesn't cap a longer streak at 7). */
+ * 7-day weekly view doesn't cap a longer streak at 7). Also returns a
+ * per-week medal history (last ~8 weeks) for the weekly award strip. */
 export async function getFocusAnalytics(userId: number, periodDays: number) {
   const goalMinutes = await getDailyGoalMinutes(userId);
   const goalSeconds = goalMinutes * 60;
 
-  const lookbackDays = Math.min(60, Math.max(periodDays, 60));
+  const lookbackDays = Math.min(56, Math.max(periodDays, 56));
   const fullDaily = await getDailyFocusSeconds(userId, lookbackDays);
   const periodDaily = fullDaily.slice(-periodDays);
 
@@ -116,6 +154,7 @@ export async function getFocusAnalytics(userId: number, periodDays: number) {
   const goalMetDays = periodDaily.filter((d) => d.seconds >= goalSeconds).length;
   const goalAchievementRate = periodDaily.length ? Math.round((goalMetDays / periodDaily.length) * 100) : 0;
   const streakDays = computeStreakDays(fullDaily);
+  const weeklyMedals = computeWeeklyMedals(fullDaily, goalSeconds);
 
   return {
     daily: periodDaily,
@@ -126,6 +165,7 @@ export async function getFocusAnalytics(userId: number, periodDays: number) {
     goalMetDays,
     periodDays: periodDaily.length,
     streakDays,
+    weeklyMedals,
   };
 }
 

@@ -20,10 +20,10 @@ export default function TodayRecommendMenu({
         className="relative w-full max-w-md overflow-hidden rounded-3xl border-2 border-white shadow-2xl"
       >
         {/* shelf backdrop */}
-        <div className="bg-gradient-to-b from-sky-blue-100 via-[#fdf6f0] to-[#f3dcc0] px-6 pb-6 pt-5">
+        <div className="bg-gradient-to-b from-sky-blue-100 via-[#f2f2f0] to-[#f3dcc0] px-6 pb-6 pt-5">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-title text-xl text-[#ff6fa5]">🧋 오늘의 카페 코너</h2>
-            <button onClick={onClose} className="text-sm font-bold text-[#a8889a]">
+            <h2 className="font-title text-xl text-[#d2658f]">🧋 오늘의 카페 코너</h2>
+            <button onClick={onClose} className="text-sm font-bold text-[#837a82]">
               ✕
             </button>
           </div>

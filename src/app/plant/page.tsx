@@ -63,43 +63,44 @@ export default function PlantPage() {
   const daysToNextStage = status ? 7 - (status.streak % 7) : 7;
 
   return (
-    <main className="min-h-screen p-6 text-[#5b4a52] sm:p-8">
-      <Link href="/" className="mb-4 inline-block text-sm text-[#a8889a]">
+    <main className="min-h-screen p-6 text-[#3a332e] sm:p-8">
+      <Link href="/" className="mb-4 inline-block text-sm text-[#837a82] hover:text-[#3a332e]">
         ← 데스크로 돌아가기
       </Link>
-      <h1 className="font-title mb-6 text-3xl text-[#3a6e58]">🌱 내 식물 키우기</h1>
 
-      <div className="mx-auto max-w-md space-y-6">
-        <div className="rounded-3xl border-2 border-white/70 bg-white/80 p-8 text-center shadow-md backdrop-blur">
-          <p className="mb-2 text-8xl">{stage.emoji}</p>
-          <p className="text-xl text-[#3a6e58]">{stage.label}</p>
-          <p className="mt-2 text-sm text-[#a8889a]">
-            🔥 연속 {status?.streak ?? 0}일째 물 주는 중!
-          </p>
+      <div className="mx-auto max-w-md">
+        <p className="text-[11px] uppercase tracking-[0.2em] text-[#9c948b]">Growth Log</p>
+        <h1 className="font-title mb-8 text-4xl text-[#3a332e]">내 식물 키우기</h1>
+
+        <div className="relative rounded-sm border border-[#e3e2de] bg-[#ffffff] p-8 text-center shadow-[0_18px_36px_rgba(40,32,28,0.12)]">
+          <span className="font-hand absolute -left-3 -top-3 -rotate-6 rounded-full bg-mint-300 px-3 py-1 text-sm text-white shadow-sm">
+            Day {status?.streak ?? 0}
+          </span>
+          <p className="mb-3 text-8xl">{stage.emoji}</p>
+          <p className="font-hand text-3xl text-[#3f6f43]">{stage.label}</p>
+          <p className="mt-2 text-sm text-[#837a82]">연속 {status?.streak ?? 0}일째 물 주는 중</p>
           {status && status.stage < 4 && (
-            <p className="text-xs text-[#cdb8c4]">다음 단계까지 {daysToNextStage}일 남았어요</p>
+            <p className="text-xs text-[#b3a8ad]">다음 단계까지 {daysToNextStage}일 남았어요</p>
           )}
 
           <button
             onClick={handleWater}
             disabled={status?.wateredToday}
-            className="mt-5 rounded-full bg-gradient-to-r from-mint-300 to-sky-blue-300 px-6 py-3 text-base font-bold text-white shadow disabled:opacity-50"
+            className="press-pop mt-6 rounded-full bg-mint-500 px-6 py-3 text-base font-bold text-white shadow-sm transition hover:bg-mint-600 disabled:opacity-50"
           >
-            {status?.wateredToday ? "오늘은 물을 줬어요 💧" : "💧 오늘 물주기"}
+            {status?.wateredToday ? "오늘은 물을 줬어요" : "오늘 물주기"}
           </button>
-          {message && <p className="mt-3 text-xs text-[#a8889a]">{message}</p>}
+          {message && <p className="font-hand mt-3 text-base text-[#837a82]">{message}</p>}
         </div>
 
-        <div className="rounded-3xl border-2 border-white/70 bg-white/80 p-5 shadow-md backdrop-blur">
-          <p className="mb-3 text-sm font-bold text-[#3a8fb8]">최근 28일 물주기 기록</p>
+        <div className="mt-6 rounded-sm border border-[#e3e2de] bg-[#ffffff] p-6 shadow-sm">
+          <p className="font-hand mb-3 text-xl text-[#3a332e]">last 28 days</p>
           <div className="grid grid-cols-7 gap-1.5">
             {calendarDays.map((day) => (
               <div
                 key={day.date}
                 title={day.date}
-                className={`aspect-square rounded-lg ${
-                  day.watered ? "bg-gradient-to-br from-mint-300 to-sky-blue-300" : "bg-angel-pink-50"
-                }`}
+                className={`aspect-square rounded-sm ${day.watered ? "bg-mint-500" : "bg-[#eeeeec]"}`}
               />
             ))}
           </div>
