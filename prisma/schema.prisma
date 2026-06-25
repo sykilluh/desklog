@@ -20,6 +20,7 @@ model User {
   challenges       Challenge[]
   focusLogs        FocusLog[]
   focusSessions    FocusSession[]
+  subjectDailyLogs SubjectDailyLog[]
   todos            Todo[]
   plantWaterings   PlantWatering[]
   bookReviews      BookReview[]
@@ -118,6 +119,25 @@ model FocusSession {
   updatedAt          DateTime         @updatedAt @map("updated_at")
 
   @@map("focus_sessions")
+}
+
+/// 같은 이름(과목)으로 들어온 집중 시간을 날짜별로 따로 쌓아두는 표 — FocusSession은
+/// "수학"을 여러 날에 걸쳐 이어해도 누적 총합만 남기지만, 이건 그 누적이 어느 날
+/// 얼마씩 쌓였는지를 (subjectName, date) 단위로 보존해서 다이어리에서 월별로
+/// "수학: 6/1 30분, 6/2 45분..." 식으로 펼쳐볼 수 있게 한다.
+model SubjectDailyLog {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  user        User     @relation(fields: [userId], references: [id])
+  subjectName String   @map("subject_name")
+  /// Local calendar day at midnight — not a timestamp.
+  date        DateTime
+  seconds     Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, subjectName, date])
+  @@map("subject_daily_logs")
 }
 
 enum FocusSessionMode {

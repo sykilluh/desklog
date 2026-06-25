@@ -91,6 +91,7 @@ export default function YoutubeMixer({
   const [url, setUrl] = useState("");
   const [volume, setVolumeState] = useState(0.5);
   const [error, setError] = useState("");
+  const [armedIndex, setArmedIndex] = useState<number | null>(null);
 
   function handleLoad() {
     const { videoId, listId } = parseYoutubeUrl(url);
@@ -117,9 +118,11 @@ export default function YoutubeMixer({
   }
 
   return (
-    <div className="rounded-3xl border-2 border-sky-blue-200 bg-gradient-to-br from-sky-blue-50 to-mint-50 p-5 shadow-md">
-      <p className="mb-1 text-lg text-[#3a8fb8]">🎧 플레이리스트</p>
-      <p className="mb-3 text-xs text-[#8fb0c4]">턴테이블을 켜면 이 음악도 함께 재생/정지돼요! 링크를 여러 개 추가해보세요.</p>
+    <div className="rounded-2xl border border-[#e3e2de] bg-white p-5 shadow-sm">
+      <div className="mb-3 flex items-baseline justify-between">
+        <p className="font-hand text-2xl text-[#3a332e]">Record Shop</p>
+        <p className="text-[11px] text-[#9c948b]">턴테이블을 켜면 같이 재생돼요</p>
+      </div>
 
       <div className="flex gap-2">
         <input
@@ -127,62 +130,94 @@ export default function YoutubeMixer({
           onChange={(e) => setUrl(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleLoad()}
           placeholder="유튜브 영상/플레이리스트 URL"
-          className="min-w-0 flex-1 rounded-full border border-sky-blue-200 bg-white px-4 py-2 text-sm text-[#5b4a52] placeholder:text-[#b8d3e3]"
+          className="min-w-0 flex-1 rounded-full border border-[#e3e2de] bg-white px-4 py-2 text-sm text-[#3a332e] placeholder:text-[#b3a8ad]"
         />
         <button
           onClick={handleLoad}
           disabled={!isReady}
-          className="rounded-full bg-sky-blue-300 px-4 py-2 text-sm font-bold text-white shadow disabled:opacity-40"
+          title="추가"
+          className="press-pop flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink-600 text-lg font-bold text-white shadow-sm transition hover:bg-ink-500 disabled:opacity-40"
         >
-          추가
+          +
         </button>
       </div>
 
       {error && <p className="mt-2 text-xs text-strawberry-milk-400">{error}</p>}
 
       {queue.length > 0 && (
-        <div className="mt-3 flex flex-col gap-1.5">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-bold uppercase tracking-wide text-[#8fb0c4]">대기열 {queue.length}곡</p>
-            <button
-              onClick={clearQueue}
-              className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#a8889a] shadow-sm hover:bg-angel-pink-50"
-            >
-              🗑️ 초기화
+        <div className="mt-4">
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-[#9c948b]">대기열 {queue.length}곡</p>
+            <button onClick={clearQueue} className="text-[11px] font-bold text-[#9c948b] hover:text-strawberry-milk-400">
+              전체 비우기
             </button>
           </div>
-          <div className="flex max-h-32 flex-col gap-1 overflow-y-auto">
-            {queue.map((item, i) => (
-              <div
-                key={`${item.videoId}-${i}`}
-                className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-xs ${
-                  i === queueIndex ? "bg-sky-blue-200 font-bold text-[#2b6f8f]" : "bg-white text-[#8fb0c4]"
-                }`}
-              >
-                <button onClick={() => playQueueIndex(i)} className="min-w-0 flex-1 truncate text-left">
-                  {i === queueIndex ? "▶ " : ""}
-                  {item.title ?? "제목 불러오는 중..."}
-                </button>
-                <button
-                  onClick={() => removeFromQueue(i)}
-                  title="대기열에서 제거"
-                  className="shrink-0 text-[#cdb8c4] hover:text-strawberry-milk-400"
+          {/* CD jewel-case shelf — real video thumbnails as "album art". Double-click
+              a card to arm its delete badge (top-right ✕); single click just plays it. */}
+          <div className="flex gap-3 overflow-x-auto pb-2" onClick={() => setArmedIndex(null)}>
+            {queue.map((item, i) => {
+              const isActive = i === queueIndex;
+              const armed = armedIndex === i;
+              return (
+                <div
+                  key={`${item.videoId}-${i}`}
+                  style={{ "--tilt": i % 2 === 0 ? "-2deg" : "2deg" } as React.CSSProperties}
+                  className={`tilt-sticker hover-lift relative w-24 shrink-0 cursor-pointer rounded-md border-2 p-1.5 shadow-md ${
+                    isActive ? "border-ink-600" : "border-white"
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    playQueueIndex(i);
+                  }}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    setArmedIndex(i);
+                  }}
                 >
-                  ✕
-                </button>
-              </div>
-            ))}
+                  <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-sm bg-ink-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`https://img.youtube.com/vi/${item.videoId}/mqdefault.jpg`}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                    {isActive && isPlaying && (
+                      <span className="absolute inset-0 flex items-center justify-center bg-ink-600/30 text-lg text-white">♪</span>
+                    )}
+                  </div>
+                  <p className="mt-1 truncate text-center text-[11px] font-semibold text-[#3a332e]">
+                    {item.title ?? "..."}
+                  </p>
+                  {armed && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeFromQueue(i);
+                        setArmedIndex(null);
+                      }}
+                      title="대기열에서 제거"
+                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-strawberry-milk-500 text-[10px] text-white shadow-md"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
 
       {currentVideoTitle && (
-        <p className="mt-3 truncate text-sm font-bold text-[#3a6e58]" title={currentVideoTitle}>
-          🎵 {currentVideoTitle}
-        </p>
+        <div className="mt-4 border-t border-[#e3e2de] pt-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9c948b]">Now Playing</p>
+          <p className="truncate text-base font-semibold text-[#3a332e]" title={currentVideoTitle}>
+            {currentVideoTitle}
+          </p>
+        </div>
       )}
 
-      <div className="mt-2 flex items-center gap-2 text-xs text-[#8fb0c4]">
+      <div className="mt-3 flex items-center gap-2 text-xs text-[#9c948b]">
         <span>{formatTime(currentTime)}</span>
         <input
           type="range"
@@ -194,7 +229,7 @@ export default function YoutubeMixer({
             seekTo(Number(e.target.value));
             onSeekBoost?.();
           }}
-          className="h-1 flex-1 accent-mint-300"
+          className="h-1 flex-1 accent-ink-600"
         />
         <span>{formatTime(duration)}</span>
       </div>
@@ -207,14 +242,14 @@ export default function YoutubeMixer({
           }}
           disabled={!isReady}
           title="10초 뒤로"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#3a8fb8] shadow-sm transition hover:scale-105 hover:bg-sky-blue-50 disabled:opacity-40"
+          className="press-pop flex h-9 w-9 items-center justify-center rounded-full border border-[#e3e2de] bg-white text-[#3a332e] transition hover:border-ink-600 disabled:opacity-40"
         >
           <SkipBackIcon />
         </button>
         <button
           onClick={isPlaying ? pause : play}
           disabled={!isReady}
-          className="flex items-center gap-1.5 rounded-full bg-gradient-to-b from-sky-blue-300 to-mint-300 px-5 py-2 text-sm font-bold text-white shadow transition hover:scale-105 disabled:opacity-40"
+          className="press-pop flex items-center gap-1.5 rounded-full bg-ink-600 px-5 py-2 text-sm font-bold text-white shadow-sm disabled:opacity-40"
         >
           {isPlaying ? <PauseIcon /> : <PlayIcon />} {isPlaying ? "일시정지" : "재생"}
         </button>
@@ -225,7 +260,7 @@ export default function YoutubeMixer({
           }}
           disabled={!isReady}
           title="10초 앞으로"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#3a8fb8] shadow-sm transition hover:scale-105 hover:bg-sky-blue-50 disabled:opacity-40"
+          className="press-pop flex h-9 w-9 items-center justify-center rounded-full border border-[#e3e2de] bg-white text-[#3a332e] transition hover:border-ink-600 disabled:opacity-40"
         >
           <SkipForwardIcon />
         </button>

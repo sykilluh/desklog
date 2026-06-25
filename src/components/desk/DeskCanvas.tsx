@@ -52,9 +52,9 @@ export default function DeskCanvas({
           ? { backgroundImage: `url(${backgroundImage})`, backgroundSize: "cover", backgroundPosition: "center" }
           : undefined
       }
-      className={`relative mx-auto aspect-[12/7] w-full max-w-[1200px] overflow-hidden rounded-[2rem] border-4 transition-colors ${
-        isOver ? "border-angel-pink-300" : "border-white/70"
-      } ${!backgroundImage ? backgroundClassName ?? "bg-gradient-to-br from-angel-pink-50 via-sky-blue-50 to-mint-50" : ""} shadow-xl`}
+      className={`relative mx-auto aspect-[12/7] w-full max-w-[1200px] overflow-hidden rounded-2xl border-2 transition-colors ${
+        isOver ? "border-angel-pink-400" : "border-[#e3e2de]"
+      } ${!backgroundImage ? backgroundClassName ?? "bg-gradient-to-br from-angel-pink-50 via-sky-blue-50 to-mint-50" : ""} shadow-[0_18px_36px_rgba(40,32,28,0.12)]`}
     >
       {objects.map((object) => (
         <DeskObjectItem

@@ -109,15 +109,15 @@ export default function ReviewsPage() {
   }
 
   return (
-    <main className="min-h-screen p-6 text-[#5b4a52] sm:p-8">
-      <Link href="/" className="mb-4 inline-block text-sm text-[#a8889a]">
+    <main className="min-h-screen p-6 text-[#3a332e] sm:p-8">
+      <Link href="/" className="mb-4 inline-block text-sm text-[#837a82]">
         ← 데스크로 돌아가기
       </Link>
-      <h1 className="font-title mb-6 text-3xl text-[#ff6fa5]">⭐ 오늘의 독서 기록</h1>
+      <h1 className="font-title mb-6 text-3xl text-[#d2658f]">⭐ 오늘의 독서 기록</h1>
 
       <div className="mx-auto grid max-w-4xl grid-cols-1 gap-6 lg:grid-cols-[1fr_1.2fr]">
         <div className="rounded-3xl border-2 border-white/70 bg-white/80 p-6 shadow-md shadow-angel-pink-100/40 backdrop-blur">
-          <h2 className="mb-4 text-xl text-[#ff6fa5]">
+          <h2 className="mb-4 text-xl text-[#d2658f]">
             {editingId !== null ? "카드 수정" : "새 카드 작성"}
           </h2>
           <div className="space-y-3">
@@ -125,49 +125,49 @@ export default function ReviewsPage() {
               value={form.bookTitle}
               onChange={(e) => updateField("bookTitle", e.target.value)}
               placeholder="책/활동 제목"
-              className="w-full rounded-2xl border border-angel-pink-100 bg-white px-4 py-2.5 text-base placeholder:text-[#cdb8c4]"
+              className="w-full rounded-2xl border border-angel-pink-100 bg-white px-4 py-2.5 text-base placeholder:text-[#b3a8ad]"
             />
             <StarRating rating={form.rating} onChange={(r) => updateField("rating", r)} size={36} />
             <input
               value={form.summary}
               onChange={(e) => updateField("summary", e.target.value)}
               placeholder="한 줄 요약"
-              className="w-full rounded-2xl border border-angel-pink-100 bg-white px-4 py-2.5 text-base placeholder:text-[#cdb8c4]"
+              className="w-full rounded-2xl border border-angel-pink-100 bg-white px-4 py-2.5 text-base placeholder:text-[#b3a8ad]"
             />
             <textarea
               value={form.review}
               onChange={(e) => updateField("review", e.target.value)}
               placeholder="오늘의 소감 / 느낀점을 자유롭게 적어보세요"
               rows={4}
-              className="w-full rounded-2xl border border-angel-pink-100 bg-white px-4 py-3 text-base placeholder:text-[#cdb8c4]"
+              className="w-full rounded-2xl border border-angel-pink-100 bg-white px-4 py-3 text-base placeholder:text-[#b3a8ad]"
             />
             <textarea
               value={form.quote}
               onChange={(e) => updateField("quote", e.target.value)}
               placeholder="좋았던 구절 (선택)"
               rows={2}
-              className="w-full rounded-2xl border border-angel-pink-100 bg-white px-4 py-3 text-base placeholder:text-[#cdb8c4]"
+              className="w-full rounded-2xl border border-angel-pink-100 bg-white px-4 py-3 text-base placeholder:text-[#b3a8ad]"
             />
             <input
               value={form.todayActivity}
               onChange={(e) => updateField("todayActivity", e.target.value)}
               placeholder="오늘 한 일 (선택, 예: 독서 30분 + 산책)"
-              className="w-full rounded-2xl border border-mint-100 bg-white px-4 py-2.5 text-base placeholder:text-[#cdb8c4]"
+              className="w-full rounded-2xl border border-mint-100 bg-white px-4 py-2.5 text-base placeholder:text-[#b3a8ad]"
             />
             <input
               value={form.food}
               onChange={(e) => updateField("food", e.target.value)}
               placeholder="곁들이면 좋은 음식 (선택)"
-              className="w-full rounded-2xl border border-strawberry-milk-100 bg-white px-4 py-2.5 text-base placeholder:text-[#cdb8c4]"
+              className="w-full rounded-2xl border border-strawberry-milk-100 bg-white px-4 py-2.5 text-base placeholder:text-[#b3a8ad]"
             />
             <input
               value={form.music}
               onChange={(e) => updateField("music", e.target.value)}
               placeholder="어울리는 음악 추천 (선택, 예: 곡명 - 아티스트)"
-              className="w-full rounded-2xl border border-sky-blue-100 bg-white px-4 py-2.5 text-base placeholder:text-[#cdb8c4]"
+              className="w-full rounded-2xl border border-sky-blue-100 bg-white px-4 py-2.5 text-base placeholder:text-[#b3a8ad]"
             />
 
-            <label className="flex items-center gap-2 rounded-2xl bg-mint-50 px-4 py-2.5 text-sm font-bold text-[#3a6e58]">
+            <label className="flex items-center gap-2 rounded-2xl bg-mint-50 px-4 py-2.5 text-sm font-bold text-[#3f6f43]">
               <input
                 type="checkbox"
                 checked={form.showDuration ?? false}
@@ -185,11 +185,11 @@ export default function ReviewsPage() {
                   updateField("durationMinutes", e.target.value === "" ? null : Number(e.target.value))
                 }
                 placeholder="총 독서시간 (분)"
-                className="w-full rounded-2xl border border-mint-100 bg-white px-4 py-2.5 text-base placeholder:text-[#cdb8c4]"
+                className="w-full rounded-2xl border border-mint-100 bg-white px-4 py-2.5 text-base placeholder:text-[#b3a8ad]"
               />
             )}
 
-            <label className="flex items-center gap-2 rounded-2xl bg-sky-blue-50 px-4 py-2.5 text-sm font-bold text-[#2b6f8f]">
+            <label className="flex items-center gap-2 rounded-2xl bg-sky-blue-50 px-4 py-2.5 text-sm font-bold text-[#3c6577]">
               <input
                 type="checkbox"
                 checked={form.showWeatherNote ?? false}
@@ -210,7 +210,7 @@ export default function ReviewsPage() {
               {editingId !== null && (
                 <button
                   onClick={cancelEdit}
-                  className="rounded-2xl bg-angel-pink-50 px-5 py-3 text-lg font-bold text-[#a8889a]"
+                  className="rounded-2xl bg-angel-pink-50 px-5 py-3 text-lg font-bold text-[#837a82]"
                 >
                   수정 취소
                 </button>
@@ -220,15 +220,15 @@ export default function ReviewsPage() {
         </div>
 
         <div className="space-y-4">
-          {isLoading && <p className="text-[#a8889a]">불러오는 중...</p>}
+          {isLoading && <p className="text-[#837a82]">불러오는 중...</p>}
           {!isLoading && reviews.length === 0 && (
-            <p className="text-[#cdb8c4]">아직 작성한 카드가 없어요.</p>
+            <p className="text-[#b3a8ad]">아직 작성한 카드가 없어요.</p>
           )}
           {reviews.map((r) => (
             <div key={r.id} className="rounded-3xl border-2 border-white/70 bg-white/80 p-5 shadow-md shadow-angel-pink-100/40">
               <div className="mb-1 flex items-center justify-between">
-                <h3 className="text-lg font-bold text-[#5b4a52]">📚 {r.bookTitle}</h3>
-                <div className="flex items-center gap-2 text-sm text-[#cdb8c4]">
+                <h3 className="text-lg font-bold text-[#3a332e]">📚 {r.bookTitle}</h3>
+                <div className="flex items-center gap-2 text-sm text-[#b3a8ad]">
                   <button onClick={() => startEdit(r)} title="수정">
                     ✏️
                   </button>
@@ -238,15 +238,15 @@ export default function ReviewsPage() {
                 </div>
               </div>
               <StarRating rating={r.rating} readOnly size={24} />
-              {r.summary && <p className="mt-2 text-sm text-[#a8889a]">📝 {r.summary}</p>}
+              {r.summary && <p className="mt-2 text-sm text-[#837a82]">📝 {r.summary}</p>}
               {r.review && <p className="mt-1 text-sm">{r.review}</p>}
-              {r.quote && <p className="mt-1 text-sm italic text-[#a8889a]">“{r.quote}”</p>}
-              {r.todayActivity && <p className="mt-1 text-xs text-[#2b6f8f]">✅ {r.todayActivity}</p>}
+              {r.quote && <p className="mt-1 text-sm italic text-[#837a82]">“{r.quote}”</p>}
+              {r.todayActivity && <p className="mt-1 text-xs text-[#3c6577]">✅ {r.todayActivity}</p>}
               {r.showDuration && r.durationMinutes != null && (
-                <p className="mt-1 text-xs text-[#3a6e58]">⏱ {r.durationMinutes}분</p>
+                <p className="mt-1 text-xs text-[#3f6f43]">⏱ {r.durationMinutes}분</p>
               )}
-              {r.food && <p className="mt-1 text-xs text-[#a8576b]">🍪 {r.food}</p>}
-              {r.music && <p className="mt-1 text-xs text-[#2b6f8f]">🎧 {r.music}</p>}
+              {r.food && <p className="mt-1 text-xs text-[#e6709c]">🍪 {r.food}</p>}
+              {r.music && <p className="mt-1 text-xs text-[#3c6577]">🎧 {r.music}</p>}
               <button
                 onClick={() => handleShare(r)}
                 className="mt-3 rounded-2xl bg-gradient-to-r from-sky-blue-300 to-mint-300 px-4 py-2 text-sm font-bold text-white shadow shadow-sky-blue-300/40"

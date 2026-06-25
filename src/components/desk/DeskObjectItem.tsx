@@ -10,6 +10,7 @@ import PlantDisplayVisual from "@/components/desk/PlantDisplayVisual";
 import PhotoFrameVisual from "@/components/desk/PhotoFrameVisual";
 import DeskClockVisual from "@/components/desk/DeskClockVisual";
 import MugIcon, { DRINK_OPTIONS, getDrinkOption } from "@/components/desk/MugIcon";
+import ConfirmButton from "@/components/ui/ConfirmButton";
 import type { DeskObjectDTO } from "@/types/desk";
 
 const TURNTABLE_BASE_SIZE = 112;
@@ -127,7 +128,9 @@ export default function DeskObjectItem({
           onClick={() => {
             if (isMug && !editMode) setShowDrinkPicker((prev) => !prev);
           }}
-          className={`select-none ${editMode ? "cursor-grab active:cursor-grabbing" : isMug ? "cursor-pointer" : ""}`}
+          className={`select-none transition-transform ${
+            editMode ? "cursor-grab active:cursor-grabbing" : isMug ? "cursor-pointer hover:scale-110" : "hover:scale-105"
+          }`}
         >
           {isTurntable ? (
             <TurntableVisual
@@ -162,7 +165,7 @@ export default function DeskObjectItem({
                 photo={drink!.photo}
                 brewing={isStudying}
               />
-              <span className="rounded-full bg-white/80 px-1.5 py-0.5 text-[10px] font-bold text-[#5b4a52] shadow-sm">
+              <span className="rounded-full bg-white/80 px-1.5 py-0.5 text-[10px] font-bold text-[#3a332e] shadow-sm">
                 {drink!.label}
               </span>
             </div>
@@ -179,9 +182,9 @@ export default function DeskObjectItem({
         {isMug && showDrinkPicker && !editMode && (
           <div
             onPointerDown={(e) => e.stopPropagation()}
-            className="absolute left-1/2 top-full z-40 mt-2 w-40 -translate-x-1/2 rounded-2xl border-2 border-angel-pink-100 bg-white p-2 shadow-xl"
+            className="hover-lift absolute left-1/2 top-full z-40 mt-2 w-40 -translate-x-1/2 rounded-md border-2 border-[#e3e2de] bg-white p-2 shadow-xl"
           >
-            <p className="mb-1 px-1 text-[11px] font-bold text-[#a8889a]">음료 고르기</p>
+            <p className="font-hand mb-1 px-1 text-sm text-[#837a82]">음료 고르기</p>
             <div className="flex flex-col gap-1">
               {DRINK_OPTIONS.map((d) => (
                 <button
@@ -206,22 +209,22 @@ export default function DeskObjectItem({
           <div
             onPointerDown={handleResizeStart}
             title="크기 조절"
-            className="absolute -bottom-1 -right-1 z-20 h-4 w-4 cursor-nwse-resize rounded-full border-2 border-white bg-sky-blue-300 shadow-md"
+            className="absolute -bottom-1 -right-1 z-20 h-4 w-4 cursor-nwse-resize rounded-full border-2 border-white bg-sky-blue-400 shadow-md"
           />
         )}
 
         {editMode && (
-          <button
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(object.id);
-            }}
-            title="삭제"
-            className="absolute -right-1 -top-1 z-20 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-strawberry-milk-400 text-[10px] font-bold leading-none text-white shadow-md transition hover:scale-110"
-          >
-            ✕
-          </button>
+          <div className="absolute -right-1 -top-1 z-20" onPointerDown={(e) => e.stopPropagation()}>
+            <ConfirmButton
+              onConfirm={() => onDelete(object.id)}
+              title="삭제"
+              confirmLabel="삭제?"
+              className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-strawberry-milk-400 text-[10px] font-bold leading-none text-white shadow-md transition hover:scale-110"
+              confirmClassName="flex h-5 items-center justify-center whitespace-nowrap rounded-full border-2 border-white bg-strawberry-milk-500 px-1.5 text-[9px] font-bold leading-none text-white shadow-md"
+            >
+              ✕
+            </ConfirmButton>
+          </div>
         )}
       </div>
 

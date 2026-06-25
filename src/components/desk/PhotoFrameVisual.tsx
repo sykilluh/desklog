@@ -81,7 +81,7 @@ export default function PhotoFrameVisual({
                 e.stopPropagation();
                 inputRef.current?.click();
               }}
-              className="flex h-full w-full flex-col items-center justify-center gap-1 text-[#a8889a]"
+              className="flex h-full w-full flex-col items-center justify-center gap-1 text-[#837a82]"
               style={{ fontSize: size * 0.16 }}
             >
               <span>🖼️</span>

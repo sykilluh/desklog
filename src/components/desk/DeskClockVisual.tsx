@@ -54,7 +54,7 @@ export default function DeskClockVisual({ size }: { size: number }) {
 
         {/* clock hands ticking for visual flavor */}
         <div
-          className="absolute left-1/2 top-1/2 origin-bottom rounded-full bg-[#5b4a52]/70 transition-transform duration-1000 ease-linear"
+          className="absolute left-1/2 top-1/2 origin-bottom rounded-full bg-[#3a332e]/70 transition-transform duration-1000 ease-linear"
           style={{
             width: size * 0.018,
             height: size * 0.26,
@@ -62,18 +62,18 @@ export default function DeskClockVisual({ size }: { size: number }) {
           }}
         />
         <div
-          className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#5b4a52]"
+          className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#3a332e]"
           style={{ width: size * 0.035, height: size * 0.035 }}
         />
 
         <span
-          className={`relative z-10 font-bold tabular-nums text-[#5b4a52] ${isRunning ? "animate-pulse" : ""}`}
+          className={`relative z-10 font-bold tabular-nums text-[#3a332e] ${isRunning ? "animate-pulse" : ""}`}
           style={{ fontSize: size * 0.17 }}
         >
           {formatTime(seconds)}
         </span>
       </div>
-      <span className="mt-1 rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-bold text-[#a8889a] shadow-sm">
+      <span className="mt-1 rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-bold text-[#837a82] shadow-sm">
         {mode === "pomodoro" ? (phase === "focus" ? "🌷 집중 중" : "🍓 휴식 중") : "⏱️ 스톱워치"}
       </span>
     </div>

@@ -29,12 +29,14 @@ export default function ArchivePage() {
   const { sessions } = useFocusSessions();
   const [stats, setStats] = useState<FocusStatistics | null>(null);
   const [challenges, setChallenges] = useState<ChallengeDTO[]>([]);
-  const [title, setTitle] = useState("나의 독서 기록");
+  const [title, setTitle] = useState("오늘의 기록");
+  const [message, setMessage] = useState("");
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
   const [config, setConfig] = useState<ShareCardConfig>({
-    backgroundId: "angel-pink",
-    fontId: "cute",
-    sticker: "🩷",
+    backgroundId: "paper",
+    fontId: "serif",
+    sticker: null,
+    includeMusic: false,
   });
 
   const selectedSession = sessions.find((s) => s.id === selectedSessionId) ?? null;
@@ -104,20 +106,22 @@ export default function ArchivePage() {
   }
 
   const completed = challenges.find((c) => c.status === "COMPLETED");
-  const nowPlaying = playlist.currentVideoTitle;
+  const nowPlaying = config.includeMusic ? playlist.currentVideoTitle : null;
 
   return (
-    <main className="min-h-screen p-6 text-[#5b4a52] sm:p-8">
-      <Link href="/" className="mb-4 inline-block text-sm text-[#a8889a]">
+    <main className="min-h-screen p-6 text-[#3a332e] sm:p-8">
+      <Link href="/" className="mb-4 inline-block text-sm text-[#837a82] hover:text-[#3a332e]">
         ← 데스크로 돌아가기
       </Link>
-      <h1 className="font-title mb-6 text-3xl text-[#ff6fa5]">🎀 SNS 공유 카드</h1>
+      <p className="text-[11px] uppercase tracking-[0.2em] text-[#9c948b]">Shareable Record</p>
+      <h1 className="font-title mb-6 text-3xl text-[#3a332e]">SHARE LOG</h1>
 
       <div className="flex flex-col items-start gap-6 lg:flex-row">
         <ShareCardTemplate
           ref={cardRef}
           config={config}
           title={title}
+          message={message}
           totalSeconds={cardSeconds}
           nowPlaying={nowPlaying}
           completedDate={completed ? completed.endDate.slice(0, 10) : null}
@@ -125,13 +129,13 @@ export default function ArchivePage() {
 
         <div className="w-full max-w-sm space-y-4">
           {sessions.length > 0 && (
-            <div className="rounded-3xl border-2 border-white/70 bg-white/80 p-4 shadow-md backdrop-blur">
-              <p className="mb-2 text-sm text-[#a8889a]">저장해둔 기록으로 카드 만들기</p>
+            <div className="rounded-2xl border border-[#e3e2de] bg-white p-4 shadow-sm">
+              <p className="mb-2 text-sm font-semibold text-[#3a332e]">저장해둔 기록으로 카드 만들기</p>
               <div className="flex flex-col gap-1.5">
                 <button
                   onClick={() => handleSelectSession(null)}
                   className={`rounded-xl px-3 py-1.5 text-left text-xs font-bold transition ${
-                    selectedSessionId === null ? "bg-angel-pink-100" : "hover:bg-angel-pink-50"
+                    selectedSessionId === null ? "bg-angel-pink-50 text-[#d2658f]" : "text-[#837a82] hover:bg-[#eeeeec]"
                   }`}
                 >
                   전체 누적 기록 ({((stats?.totalSeconds ?? 0) / 3600).toFixed(1)}시간)
@@ -141,23 +145,36 @@ export default function ArchivePage() {
                     key={s.id}
                     onClick={() => handleSelectSession(s.id)}
                     className={`rounded-xl px-3 py-1.5 text-left text-xs font-bold transition ${
-                      selectedSessionId === s.id ? "bg-angel-pink-100" : "hover:bg-angel-pink-50"
+                      selectedSessionId === s.id ? "bg-angel-pink-50 text-[#d2658f]" : "text-[#837a82] hover:bg-[#eeeeec]"
                     }`}
                   >
-                    📌 {s.name} ({formatDuration(s.totalSeconds)}){s.isCompleted ? " ✅" : ""}
+                    {s.name} ({formatDuration(s.totalSeconds)}){s.isCompleted ? " ✓" : ""}
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          <div className="rounded-3xl border-2 border-white/70 bg-white/80 p-4 shadow-md backdrop-blur">
-            <p className="mb-2 text-sm text-[#a8889a]">카드 제목 수정</p>
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-full border border-angel-pink-100 bg-white px-4 py-2 text-sm"
-            />
+          <div className="space-y-3 rounded-2xl border border-[#e3e2de] bg-white p-4 shadow-sm">
+            <div>
+              <p className="mb-2 text-sm font-semibold text-[#3a332e]">카드 제목 수정</p>
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full rounded-full border border-[#e3e2de] bg-white px-4 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <p className="mb-2 text-sm font-semibold text-[#3a332e]">메시지 (선택)</p>
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="카드 가운데에 남길 한마디를 적어보세요"
+                rows={2}
+                maxLength={80}
+                className="w-full resize-none rounded-2xl border border-[#e3e2de] bg-white px-4 py-2 text-sm placeholder:text-[#b3a8ad]"
+              />
+            </div>
           </div>
 
           <CardCustomizer config={config} onChange={setConfig} />
@@ -165,24 +182,24 @@ export default function ArchivePage() {
           <div className="flex gap-2">
             <button
               onClick={handleDownload}
-              className="flex-1 rounded-full bg-gradient-to-r from-angel-pink-300 to-strawberry-milk-300 px-4 py-2.5 font-bold text-white shadow hover:scale-105"
+              className="press-pop flex-1 rounded-full bg-ink-600 px-4 py-2.5 font-semibold text-white shadow-sm transition hover:bg-ink-500"
             >
-              💾 다운로드
+              다운로드
             </button>
             <button
               onClick={handleShare}
-              className="flex-1 rounded-full bg-gradient-to-r from-sky-blue-300 to-mint-300 px-4 py-2.5 font-bold text-white shadow hover:scale-105"
+              className="press-pop flex-1 rounded-full border border-[#e3e2de] bg-white px-4 py-2.5 font-semibold text-[#3a332e] transition hover:border-ink-400"
             >
-              📤 공유하기
+              공유하기
             </button>
           </div>
           <button
             onClick={handleEmailShare}
-            className="w-full rounded-full border-2 border-angel-pink-200 bg-white px-4 py-2.5 font-bold text-[#5b4a52] shadow-sm hover:bg-angel-pink-50"
+            className="press-pop w-full rounded-full border border-[#e3e2de] bg-white px-4 py-2.5 font-semibold text-[#3a332e] transition hover:border-ink-400"
           >
-            ✉️ 이메일로 공유
+            이메일로 공유
           </button>
-          <p className="text-center text-xs text-[#cdb8c4]">
+          <p className="text-center text-xs text-[#b3a8ad]">
             카카오톡 공유는 카카오 앱 키 등록 후 연결해드릴게요!
           </p>
         </div>

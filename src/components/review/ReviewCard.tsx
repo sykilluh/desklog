@@ -21,75 +21,75 @@ const ReviewCard = forwardRef<HTMLDivElement, ReviewCardProps>(({ review, weathe
   return (
     <div
       ref={ref}
-      className="flex w-[340px] flex-col gap-3 rounded-3xl border-4 border-white bg-gradient-to-br from-angel-pink-100 to-strawberry-milk-100 p-6 shadow-[0_18px_36px_rgba(168,136,154,0.35)]"
+      className="relative flex w-[340px] flex-col gap-3 rounded-sm border border-[#e3e2de] bg-[#ffffff] p-7 shadow-[0_18px_36px_rgba(40,32,28,0.16)]"
     >
-      <p className="text-xs uppercase tracking-widest text-[#a8889a]">🩷 오늘의 독서 기록</p>
-      <h3 className="text-xl font-bold text-[#5b4a52]">{review.bookTitle}</h3>
-      <StarRating rating={review.rating} readOnly size={28} />
+      <span className="font-hand pointer-events-none absolute -right-3 -top-3 rotate-6 rounded-full bg-angel-pink-300 px-3 py-1 text-sm text-white shadow-sm">
+        Today's Read
+      </span>
+
+      <p className="text-[11px] uppercase tracking-[0.2em] text-[#9c948b]">Reading Log</p>
+      <h3 className="font-title text-2xl text-[#3a332e]">{review.bookTitle}</h3>
+      <StarRating rating={review.rating} readOnly size={24} />
 
       {review.summary && (
-        <p className="rounded-2xl bg-white/70 p-3 text-sm text-[#5b4a52]">📝 {review.summary}</p>
+        <p className="border-t border-dashed border-[#e3e2de] pt-3 text-sm text-[#3a332e]">{review.summary}</p>
       )}
 
-      {review.review && <p className="text-sm leading-relaxed text-[#5b4a52]">{review.review}</p>}
+      {review.review && <p className="text-sm leading-relaxed text-[#3a332e]">{review.review}</p>}
 
       {review.quote && (
-        <blockquote className="rounded-2xl border-l-4 border-angel-pink-300 bg-white/60 p-3 text-sm italic text-[#7a5e6c]">
+        <blockquote className="font-hand rotate-[-1deg] rounded-sm bg-[#f8f4ee] p-3 text-lg leading-snug text-[#5c5650]">
           “{review.quote}”
         </blockquote>
       )}
 
       <div className="flex flex-wrap gap-1.5">
         {review.showDuration && review.durationMinutes != null && (
-          <span className="rounded-full bg-mint-100 px-3 py-1 text-xs font-bold text-[#3a6e58] shadow-sm">
-            ⏱ 총 독서시간 {review.durationMinutes}분
+          <span className="rounded-full border border-mint-300 px-3 py-1 text-xs font-bold text-[#3f6f43]">
+            총 독서시간 {review.durationMinutes}분
           </span>
         )}
         {review.todayActivity && (
-          <span className="rounded-full bg-sky-blue-100 px-3 py-1 text-xs font-bold text-[#2b6f8f] shadow-sm">
-            ✅ 오늘 한 일: {review.todayActivity}
+          <span className="rounded-full border border-sky-blue-300 px-3 py-1 text-xs font-bold text-[#3c6577]">
+            오늘 한 일: {review.todayActivity}
           </span>
         )}
         {playlist.currentVideoTitle && (
-          <span className="rounded-full bg-angel-pink-100 px-3 py-1 text-xs font-bold text-[#a8576b] shadow-sm">
-            🎵 지금 듣고 있는 음악: {playlist.currentVideoTitle}
+          <span className="rounded-full border border-angel-pink-300 px-3 py-1 text-xs font-bold text-[#e6709c]">
+            듣고 있던 음악: {playlist.currentVideoTitle}
           </span>
         )}
         {recommendedAsmr && (
-          <span className="rounded-full bg-strawberry-milk-100 px-3 py-1 text-xs font-bold text-[#a8576b] shadow-sm">
-            {recommendedAsmr.emoji} 오늘의 추천 ASMR: {recommendedAsmr.label}
+          <span className="rounded-full border border-strawberry-milk-300 px-3 py-1 text-xs font-bold text-[#e6709c]">
+            {recommendedAsmr.emoji} 추천 ASMR: {recommendedAsmr.label}
           </span>
         )}
       </div>
 
       {review.showWeatherNote && weatherCode != null && (
-        <p className="rounded-2xl bg-white/70 p-3 text-xs leading-relaxed text-[#5b4a52]">
-          ☁️ {weatherBlurb(weatherCode)}
+        <p className="rounded-sm bg-[#f8f4ee] p-3 text-xs leading-relaxed text-[#3a332e]">
+          {weatherBlurb(weatherCode)}
         </p>
       )}
 
       {(review.food || review.music) && (
-        <div className="flex flex-col gap-2 rounded-2xl bg-white/70 p-3 text-sm text-[#5b4a52]">
+        <div className="flex flex-col gap-2 rounded-sm bg-[#f8f4ee] p-3 text-sm text-[#3a332e]">
           {review.food && (
             <div className="flex items-center gap-2">
-              <span className="shrink-0 rounded-full bg-strawberry-milk-200 px-2 py-0.5 text-xs font-bold text-[#a8576b]">
-                🍪 곁들임
-              </span>
+              <span className="font-hand shrink-0 text-base text-[#e6709c]">곁들임 —</span>
               <span className="truncate">{review.food}</span>
             </div>
           )}
           {review.music && (
             <div className="flex items-center gap-2">
-              <span className="shrink-0 rounded-full bg-sky-blue-200 px-2 py-0.5 text-xs font-bold text-[#2b6f8f]">
-                🎧 추천 음악
-              </span>
+              <span className="font-hand shrink-0 text-base text-[#3c6577]">추천 음악 —</span>
               <span className="truncate">{review.music}</span>
             </div>
           )}
         </div>
       )}
 
-      <p className="text-right text-xs text-[#cdb8c4]">
+      <p className="text-right text-xs text-[#b3a8ad]">
         {new Date(review.createdAt).toLocaleDateString("ko-KR")}
       </p>
     </div>

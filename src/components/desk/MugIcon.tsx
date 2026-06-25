@@ -18,7 +18,7 @@ export const DRINK_OPTIONS: DrinkOption[] = [
   {
     id: "vanillaLatte",
     label: "Vanilla Latte",
-    cupFill: "#fdf3e3",
+    cupFill: "#f5f5f3",
     cupStroke: "#a8825a",
     liquidFill: "#e8c89a",
     liquidStroke: "#a8825a",
@@ -36,7 +36,7 @@ export const DRINK_OPTIONS: DrinkOption[] = [
   {
     id: "milkTea",
     label: "Milk Tea",
-    cupFill: "#fdf3e3",
+    cupFill: "#f5f5f3",
     cupStroke: "#a8825a",
     liquidFill: "#d8b48c",
     liquidStroke: "#a8825a",
@@ -72,9 +72,9 @@ function lighten(hex: string, amount: number): string {
 export default function MugIcon({
   size = 32,
   cupFill = "#ffe4ee",
-  cupStroke = "#a8576b",
+  cupStroke = "#e6709c",
   liquidFill = "#ffc9dd",
-  liquidStroke = "#a8576b",
+  liquidStroke = "#e6709c",
   variantId,
   photo,
   brewing = false,

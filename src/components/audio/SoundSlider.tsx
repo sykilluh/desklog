@@ -18,7 +18,7 @@ export default function SoundSlider({
     >
       <button
         onClick={onToggle}
-        className={`text-sm ${isActive ? "text-strawberry-milk-400" : "text-[#cdb8c4]"}`}
+        className={`text-sm ${isActive ? "text-strawberry-milk-400" : "text-[#b3a8ad]"}`}
       >
         {isActive ? "🔊" : "🔈"}
       </button>
